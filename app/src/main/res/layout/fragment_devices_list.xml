@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:layout_gravity="top"
+    android:gravity="top" >
+
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:id="@+id/rlTopPanel"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true">
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Start WM"
+            android:id="@+id/StartWifiManager"
+            android:layout_gravity="center_vertical"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:visibility="gone" />
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Stop WM"
+            android:id="@+id/StopWifiManager"
+            android:layout_gravity="center_vertical"
+            android:layout_alignParentTop="true"
+            android:layout_toRightOf="@+id/StartWifiManager"
+            android:layout_toEndOf="@+id/StartWifiManager"
+            android:visibility="gone"/>
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Start LS"
+            android:id="@+id/StartLocalService"
+            android:layout_gravity="center_vertical"
+            android:layout_above="@+id/broadcastMsg"
+            android:layout_toEndOf="@+id/RemoveGroupBtn"
+            android:layout_toRightOf="@+id/RemoveGroupBtn" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Start Listen"
+            android:id="@+id/startListeners"
+            android:layout_gravity="center_vertical"
+            android:layout_alignParentTop="true"
+            android:layout_toRightOf="@+id/clearAll"
+            android:layout_toEndOf="@+id/clearAll" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Start SD"
+            android:id="@+id/discoveryStartBtn"
+            android:layout_below="@+id/StartWifiManager"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true" />
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Start PD"
+            android:id="@+id/discoverPeersBtn"
+            android:layout_alignTop="@+id/startListeners"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:visibility="gone" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Set SR"
+            android:id="@+id/setServiceRequest"
+            android:layout_above="@+id/DisconnectBtn"
+            android:layout_toLeftOf="@+id/discoveryStartBtn"
+            android:layout_toStartOf="@+id/discoveryStartBtn" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Send Message"
+            android:id="@+id/sendMsg"
+            android:layout_alignTop="@+id/broadcastMsg"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true" />
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Broadcast"
+            android:id="@+id/broadcastMsg"
+            android:layout_above="@+id/scrollView"
+            android:layout_centerHorizontal="true" />
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Disconnect"
+            android:id="@+id/DisconnectBtn"
+            android:layout_marginTop="56dp"
+            android:layout_below="@+id/discoveryStartBtn"
+            android:layout_toRightOf="@+id/RemoveGroupBtn"
+            android:layout_toEndOf="@+id/RemoveGroupBtn" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Create Group"
+            android:id="@+id/CreateGroupBtn"
+            android:layout_above="@+id/sendMsg"
+            android:layout_toRightOf="@+id/StartWifiManager"
+            android:layout_toEndOf="@+id/StartWifiManager" />
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Delete Group"
+            android:id="@+id/RemoveGroupBtn"
+            android:layout_above="@+id/broadcastMsg"
+            android:layout_toRightOf="@+id/sendMsg"
+            android:layout_toEndOf="@+id/sendMsg" />
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="RequestGI"
+            android:id="@+id/RequestGroupInfoBtn"
+            android:layout_alignTop="@+id/CreateGroupBtn"
+            android:layout_centerHorizontal="true"
+            android:visibility="gone"/>
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="RequestCI"
+            android:id="@+id/RequestConnectionInfoBtn"
+            android:layout_alignTop="@+id/RequestGroupInfoBtn"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:visibility="gone"/>
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Clear"
+            android:id="@+id/clearAll"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ServerSocket"
+            android:id="@+id/StartServerSocket"
+            android:layout_gravity="center_vertical"
+            android:layout_above="@+id/setServiceRequest"
+            android:layout_toLeftOf="@+id/RemoveGroupBtn"
+            android:layout_toStartOf="@+id/RemoveGroupBtn"
+            android:visibility="gone"/>
+
+        <ScrollView
+            android:orientation="vertical"
+            android:layout_width="fill_parent"
+            android:layout_height="100dp"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="false"
+            android:layout_below="@+id/DisconnectBtn"
+            android:id="@+id/scrollView">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="New Text"
+                android:textColor="#000"
+                android:id="@+id/status_text"
+                android:layout_centerVertical="true"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true" />
+
+        </ScrollView>
+
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/groupsView"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:layout_above="@+id/container_root"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:visibility="gone">
+
+        </android.support.v7.widget.RecyclerView>
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/recordsView"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:layout_below="@+id/scrollView"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true">
+        </android.support.v7.widget.RecyclerView>
+
+    <LinearLayout
+        android:id="@+id/container_root"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentBottom="true">
+
+    </LinearLayout>
+    </RelativeLayout>
+
+</RelativeLayout>

@@ -332,8 +332,8 @@ public class WifiGroupListing extends AppCompatActivity implements
         updateItems(WifiDirectManager.FoundServices);
         appendStatus("Start Wifi Direct Manager");
 
-       // SetDnsSdListeners();
-        //StartAutomaticSearch();
+        SetDnsSdListeners();
+        StartAutomaticSearch();
     }
 
     private void DisconnectFromWifi(){

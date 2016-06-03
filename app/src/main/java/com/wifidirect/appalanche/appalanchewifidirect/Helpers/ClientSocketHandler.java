@@ -43,7 +43,7 @@ public class ClientSocketHandler extends Thread {
 
     @Override
     public void run() {
-        
+
         //while(isAlive) {
             Socket socket = new Socket();
             try {

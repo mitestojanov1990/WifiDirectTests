@@ -928,8 +928,6 @@ public class WifiGroupListing extends AppCompatActivity implements
     public void appendStatus(String status) {
         //if(eventBus != null)
             //   eventBus.post(new WifiMessageEvent(status));
-        //if(eventBus != null)
-            //eventBus.post(new WifiMessageEvent(status));
         String current = statusTxtView.getText().toString();
         statusTxtView.setText(current + "\n" + status);
         Log.d(Constants.TAG_LOG, status);

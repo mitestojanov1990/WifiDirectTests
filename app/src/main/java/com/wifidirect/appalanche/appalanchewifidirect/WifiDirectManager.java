@@ -130,8 +130,6 @@ public class WifiDirectManager {
             wifi.reconnect();
             wifi.reassociate();
         }else{
-            ((WifiManagerListener) activity).SendMessage("Cannot connect");
-            EventBus.getDefault().post(new WifiStatusEvent(false));
             ((WifiGroupManagerListener) activity).SendMessage("Cannot connect");
         }
     }

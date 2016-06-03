@@ -35,6 +35,7 @@ import com.wifidirect.appalanche.appalanchewifidirect.Interfaces.MessageForwarde
 import com.wifidirect.appalanche.appalanchewifidirect.Interfaces.MessageTarget;
 import com.wifidirect.appalanche.appalanchewifidirect.Interfaces.WifiManagerListener;
 import com.wifidirect.appalanche.appalanchewifidirect.Models.AppMessage;
+import com.wifidirect.appalanche.appalanchewifidirect.Models.SocketStatusEvent;
 import com.wifidirect.appalanche.appalanchewifidirect.Models.WifiMessageEvent;
 import com.wifidirect.appalanche.appalanchewifidirect.Models.WifiServiceTxtRecord;
 import com.wifidirect.appalanche.appalanchewifidirect.Models.WifiStatusEvent;
@@ -176,6 +177,7 @@ public class WifiGroupListing extends AppCompatActivity implements
 
     private void ClearAll(){
         statusTxtView.setText("");
+        statusTxtView.scrollTo(0,0);
     }
 
     public void Init(){
@@ -416,7 +418,21 @@ public class WifiGroupListing extends AppCompatActivity implements
     }
     @Subscribe
     public void onEvent(WifiStatusEvent event){
-        ((WifiManagerListener)curActivity).SetServerIpAddress(curRecord.getServerIp());
+        if(!event.getIsConnected()){
+            appendStatus("Wifi not connected... do something");
+        }else {
+            ((WifiManagerListener) curActivity).SetServerIpAddress(curRecord.getServerIp());
+        }
+    }
+    @Subscribe
+    public void onEvent(SocketStatusEvent event){
+        if(!event.getIsConnected()){
+            appendStatus("Socket is not connected.. do something");
+            IsSocketConnected = false;
+            //ConnectToSocket();
+        }else{
+            appendStatus("Socket is connected..");
+        }
     }
 
     private void StopLocalService(){
@@ -521,7 +537,7 @@ public class WifiGroupListing extends AppCompatActivity implements
     }
 
     public void StopDiscovery(final WifiP2pManager.ActionListener listener){
-        if (wifiDirectManager.getManager() != null && wifiDirectManager.getChannel() != null) {
+        if (wifiDirectManager.getWifiP2pManager() != null && wifiDirectManager.getChannel() != null) {
             Disconnect(new WifiP2pManager.ActionListener() {
                 @Override
                 public void onFailure(int reasonCode) {
@@ -803,7 +819,7 @@ public class WifiGroupListing extends AppCompatActivity implements
     public void onResume() {
         super.onResume();
         if(wifiDirectManager != null){
-            _receiver = new WiFiDirectBroadcastReceiver(wifiDirectManager.getManager(), wifiDirectManager.getChannel(), this);
+            _receiver = new WiFiDirectBroadcastReceiver(wifiDirectManager.getWifiP2pManager(), wifiDirectManager.getChannel(), this);
             registerReceiver(_receiver, intentFilter);
         }
         if (!EventBus.getDefault().isRegistered(this)) {
@@ -906,8 +922,8 @@ public class WifiGroupListing extends AppCompatActivity implements
     }
 
     public void appendStatus(String status) {
-        if(eventBus != null)
-            eventBus.post(new WifiMessageEvent(status));
+        //if(eventBus != null)
+            //eventBus.post(new WifiMessageEvent(status));
         String current = statusTxtView.getText().toString();
         statusTxtView.setText(current + "\n" + status);
         Log.d(Constants.TAG_LOG, status);
@@ -962,7 +978,7 @@ public class WifiGroupListing extends AppCompatActivity implements
 
     @Override
     public void onChannelDisconnected() {
-        if (wifiDirectManager.getManager() != null && !retryChannel) {
+        if (wifiDirectManager.getWifiP2pManager() != null && !retryChannel) {
             Toast.makeText(this, "Channel lost. Trying again", Toast.LENGTH_LONG).show();
             resetData(false);
             retryChannel = true;
@@ -1293,7 +1309,6 @@ public class WifiGroupListing extends AppCompatActivity implements
 
     @Override
     public void GetSocketStatus(boolean isConnected){
-        if(!isConnected)
-            IsConnected = false;
+        IsConnected = isConnected;
     }
 }

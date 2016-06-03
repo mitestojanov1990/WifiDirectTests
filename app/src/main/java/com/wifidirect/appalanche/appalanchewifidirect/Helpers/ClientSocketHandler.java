@@ -5,7 +5,10 @@ import android.util.Log;
 
 import com.wifidirect.appalanche.appalanchewifidirect.Interfaces.WifiManagerListener;
 import com.wifidirect.appalanche.appalanchewifidirect.MessageManager;
+import com.wifidirect.appalanche.appalanchewifidirect.Models.SocketStatusEvent;
 import com.wifidirect.appalanche.appalanchewifidirect.WifiGroupListing;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -29,16 +32,17 @@ public class ClientSocketHandler extends Thread {
         this.activity = activity;
     }
 
-
-    public void StopClientSocket(){
-        isAlive = false;
-        if(t.isAlive()){
-
-        }
-    }
-
     public boolean IsSocketConnected(){
         return t.isAlive();
+    }
+
+    public void CheckConnection(){
+        while(true){
+            if(!IsSocketConnected()){
+                EventBus.getDefault().post(new SocketStatusEvent(false));
+                break;
+            }
+        }
     }
 
     @Override
@@ -54,6 +58,8 @@ public class ClientSocketHandler extends Thread {
                 _messageHandler = new MessageManager(socket, handler);
                 t = new Thread(_messageHandler);
                 t.start();
+                CheckConnection();
+                t.interrupt();
                 t.join();
 
             } catch (IOException e) {

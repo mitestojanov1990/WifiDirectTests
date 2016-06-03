@@ -113,6 +113,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
                     }
                 } else {
                     if (activity != null) {
+                        EventBus.getDefault().post(new WifiStatusEvent(false));
                         ((WifiManagerListener) activity).SendMessage("Not connected");
                     }
                 }

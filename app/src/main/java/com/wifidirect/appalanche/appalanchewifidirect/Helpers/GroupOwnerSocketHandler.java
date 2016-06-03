@@ -4,7 +4,7 @@ import android.os.Handler;
 import android.util.Log;
 
 import com.wifidirect.appalanche.appalanchewifidirect.MessageManager;
-import com.wifidirect.appalanche.appalanchewifidirect.WifiGroupListing;
+import com.wifidirect.appalanche.appalanchewifidirect.WifiGroupManager;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -19,11 +19,11 @@ public class GroupOwnerSocketHandler extends Thread {
     static ServerSocket socket = null;
     private final int THREAD_COUNT = 10;
     private Handler handler;
-    private static WifiGroupListing activity;
+    private static WifiGroupManager activity;
 
     private SocketAddress myIP;
 
-    public GroupOwnerSocketHandler(Handler handler, WifiGroupListing activity) throws IOException {
+    public GroupOwnerSocketHandler(Handler handler, WifiGroupManager activity) throws IOException {
 
         try {
             socket = new ServerSocket(Constants.SERVER_PORT);
@@ -71,7 +71,7 @@ public class GroupOwnerSocketHandler extends Thread {
                 Log.d(Constants.TAG_LOG, "Before create MessageManager");
                 Socket tmp = socket.accept();
                 MessageManager mgr = new MessageManager(tmp, handler);
-                WifiGroupListing.ConnectedClientManagers.add(mgr);
+                WifiGroupManager.ConnectedClientManagers.add(mgr);
                 pool.execute(mgr);
                 Log.d(Constants.TAG_LOG, "Launching the I/O handler (server)");
                 SendStatusMessage("Launching the I/O handler (server)");

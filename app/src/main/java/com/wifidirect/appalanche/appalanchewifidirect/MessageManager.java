@@ -39,6 +39,9 @@ public class MessageManager implements Runnable {
     private InputStream iStream;
     private OutputStream oStream;
 
+    public Socket getSocket(){
+        return this.socket;
+    }
     @Override
     public void run() {
         try {

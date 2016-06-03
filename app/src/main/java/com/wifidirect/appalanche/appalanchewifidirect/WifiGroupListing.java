@@ -839,6 +839,7 @@ public class WifiGroupListing extends AppCompatActivity implements
         DisconnectFromWifi();
         RemoveServiceRequest();
         StopLocalService();
+        finish();
         super.onDestroy();
 
     }

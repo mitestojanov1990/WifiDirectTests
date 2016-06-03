@@ -24,6 +24,7 @@ public class GroupOwnerSocketHandler extends Thread {
     private SocketAddress myIP;
 
     public GroupOwnerSocketHandler(Handler handler, WifiGroupListing activity) throws IOException {
+        
         try {
             socket = new ServerSocket(Constants.SERVER_PORT);
             myIP = socket.getLocalSocketAddress();

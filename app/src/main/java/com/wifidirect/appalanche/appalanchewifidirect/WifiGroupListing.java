@@ -332,15 +332,10 @@ public class WifiGroupListing extends AppCompatActivity implements
         updateItems(WifiDirectManager.FoundServices);
         appendStatus("Start Wifi Direct Manager");
 
+        // on init
         SetDnsSdListeners();
+        // start search/create group
         StartAutomaticSearch();
-    }
-
-    private void DisconnectFromWifi(){
-        wifiDirectManager.DisconnectFromWifi();
-        IsConnected = false;
-        curRecord = null;
-        appendStatus("Disconnect from Wifi");
     }
 
     private void StartAutomaticSearch(){
@@ -348,12 +343,24 @@ public class WifiGroupListing extends AppCompatActivity implements
 
         checkForAvailableConnectionsHandler.postDelayed(checkForAvailableConnections, 5000);
     }
-
+    // StartAutomaticSearch
     private void reDiscoverServices(boolean repeat){
         if(repeat)
             reDisocverHandler.postDelayed(reDiscoverRecords, 20000);
     }
+    private Runnable reDiscoverRecords = new Runnable() {
+        @Override
+        public void run() {
+            StartAutomaticSearch();
+        }
+    };
+    private Runnable checkForAvailableConnections = new Runnable(){
 
+        @Override
+        public void run() {
+            CheckIfConnectionsAvailable();
+        }
+    };
     private void CheckIfConnectionsAvailable(){
         if (WifiDirectManager.FoundServices.size() > 0) {
             //if(!IsConnected) {
@@ -369,11 +376,11 @@ public class WifiGroupListing extends AppCompatActivity implements
 
     private void FindHighestPriorityConnection(){
         WifiServiceTxtRecord tmp = wifiDirectManager.GetByHighestPriority();
-        if(tmp != null) {
+        if(tmp != null){
             appendStatus("Priority: " + tmp.getUserID());
-            if (curRecord == null) {
+            if (curRecord == null){
                 CheckAndConnect(tmp);
-            } else if (tmp.getUserID() > curRecord.getUserID()) {
+            } else if (tmp.getUserID() > curRecord.getUserID()){
                 CheckAndConnect(tmp);
             }else{
                 if(!IsSocketConnected){
@@ -382,11 +389,19 @@ public class WifiGroupListing extends AppCompatActivity implements
             }
         }
     }
+
+    private void DisconnectFromWifi(){
+        wifiDirectManager.DisconnectFromWifi();
+        IsConnected = false;
+        curRecord = null;
+        appendStatus("Disconnect from Wifi");
+    }
     private void CheckAndConnect(WifiServiceTxtRecord tmp){
         // Disconnected if connected
         if(IsConnected){
             wifiDirectManager.DisconnectFromWifi();
             IsConnected = false;
+            IsSocketConnected = false;
         }
         // Connect
         curRecord = tmp;
@@ -718,21 +733,6 @@ public class WifiGroupListing extends AppCompatActivity implements
             }
         });
     }
-
-    private Runnable reDiscoverRecords = new Runnable() {
-        @Override
-        public void run() {
-            StartAutomaticSearch();
-        }
-    };
-
-    private Runnable checkForAvailableConnections = new Runnable(){
-
-        @Override
-        public void run() {
-            CheckIfConnectionsAvailable();
-        }
-    };
 
     private Runnable requestGroupInfoRunnable = new Runnable() {
         @Override
@@ -1298,6 +1298,14 @@ public class WifiGroupListing extends AppCompatActivity implements
         if(curRecord != null)
             CreateClientSocket(curRecord.getServerIp());
     }
+    @Override
+    public void GetSocketStatus(boolean isConnected){
+        IsConnected = isConnected;
+    }
+    @Override
+    public void GetWifiStatus(boolean isConnected){
+        IsConnected = isConnected;
+    }
 
     @Override
     public void GetMyDeviceName(String deviceName) {
@@ -1310,10 +1318,5 @@ public class WifiGroupListing extends AppCompatActivity implements
                 }
             }
         }
-    }
-
-    @Override
-    public void GetSocketStatus(boolean isConnected){
-        IsConnected = isConnected;
     }
 }

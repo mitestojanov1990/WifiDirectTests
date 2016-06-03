@@ -3,7 +3,6 @@ package com.wifidirect.appalanche.appalanchewifidirect;
 import android.app.Activity;
 import android.content.Context;
 import android.content.IntentFilter;
-import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
 import android.net.wifi.p2p.WifiP2pConfig;
@@ -13,6 +12,9 @@ import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceRequest;
 
 import com.wifidirect.appalanche.appalanchewifidirect.Interfaces.WifiManagerListener;
 import com.wifidirect.appalanche.appalanchewifidirect.Models.WifiServiceTxtRecord;
+import com.wifidirect.appalanche.appalanchewifidirect.Models.WifiStatusEvent;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,7 +45,6 @@ public class WifiDirectManager {
 
         this.context = context;
         this.activity = activity;
-        intentFilter = intentFilter;
 
         wifi = (WifiManager)this.context.getSystemService(Context.WIFI_SERVICE);
 
@@ -72,114 +73,11 @@ public class WifiDirectManager {
         _channel = manager.initialize(this.context, this.context.getMainLooper(), null);
     }
 
-    public void ToggleWifiMode(boolean enabled){
-        wifi.setWifiEnabled(enabled);
-    }
-    public boolean IsWifiEnabled(){
-        return wifi.isWifiEnabled();
-    }
-    public String getScanResultSecurity(ScanResult scanResult) {
-
-        final String cap = scanResult.capabilities;
-        final String[] securityModes = { "WEP", "PSK", "EAP" };
-
-        for (int i = securityModes.length - 1; i >= 0; i--) {
-            if (cap.contains(securityModes[i])) {
-                return securityModes[i];
-            }
-        }
-
-        return "OPEN";
-    }
-    private WifiConfiguration createAPConfiguration(String networkSSID, String networkPasskey, String securityMode) {
-        WifiConfiguration wifiConfiguration = new WifiConfiguration();
-
-        wifiConfiguration.SSID = "\"" + networkSSID + "\"";
-
-        if (securityMode.equalsIgnoreCase("OPEN")) {
-
-            wifiConfiguration.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
-
-        } else if (securityMode.equalsIgnoreCase("WEP")) {
-
-            wifiConfiguration.wepKeys[0] = "\"" + networkPasskey + "\"";
-            wifiConfiguration.wepTxKeyIndex = 0;
-            wifiConfiguration.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
-            wifiConfiguration.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP40);
-
-        } else if (securityMode.equalsIgnoreCase("PSK")) {
-
-            wifiConfiguration.preSharedKey = "\"" + networkPasskey + "\"";
-            wifiConfiguration.hiddenSSID = true;
-            wifiConfiguration.status = WifiConfiguration.Status.ENABLED;
-            wifiConfiguration.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.TKIP);
-            wifiConfiguration.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.CCMP);
-            wifiConfiguration.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK);
-            wifiConfiguration.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.TKIP);
-            wifiConfiguration.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.CCMP);
-            wifiConfiguration.allowedProtocols.set(WifiConfiguration.Protocol.RSN);
-            wifiConfiguration.allowedProtocols.set(WifiConfiguration.Protocol.WPA);
-
-        } else {
-            return null;
-        }
-
-        return wifiConfiguration;
-
-    }
-    public int connectToAP() {
-        List<ScanResult> scanResultList = wifi.getScanResults();
-        for (ScanResult result : scanResultList) {
-
-            if (result.SSID.equals(tmpSSID)) {
-
-                String securityMode = getScanResultSecurity(result);
-
-                WifiConfiguration wifiConfiguration = createAPConfiguration(tmpSSID, tmpPass, securityMode);
-
-                int res = wifi.addNetwork(wifiConfiguration);
-
-                boolean b = wifi.enableNetwork(res, true);
-
-                wifi.setWifiEnabled(true);
-
-                boolean changeHappen = wifi.saveConfiguration();
-
-                if (res != -1 && changeHappen) {
-                } else {
-                }
-
-                return res;
-            }
-        }
-
-        return -1;
-    }
-
-    int getSecurity(WifiConfiguration config) {
-        if (config.allowedKeyManagement.get(WifiConfiguration.KeyMgmt.WPA_PSK)) {
-            //return SECURITY_PSK;
-            return 1;
-        }
-        if (config.allowedKeyManagement.get(WifiConfiguration.KeyMgmt.WPA_EAP) ||
-                config.allowedKeyManagement.get(WifiConfiguration.KeyMgmt.IEEE8021X)) {
-            //return SECURITY_EAP;
-            return 2;
-        }
-        return (config.wepKeys[0] != null) ? 0 : 3; //SECURITY_WEP : SECURITY_NONE;
-    }
-
-    private String tmpSSID;
-    private String tmpPass;
     public void ConnectToWifi(String SSID, String PassPhrase){
-//        wifi.startScan();
-//        tmpSSID  = SSID;
-//        tmpPass = PassPhrase;
         WifiConfiguration wfc = new WifiConfiguration();
         wfc.SSID = String.format("\"%s\"", SSID);
         wfc.preSharedKey = String.format("\"%s\"", PassPhrase);
         wfc.status = WifiConfiguration.Status.ENABLED;
-
         /*
         * RSN = WPA2/IEEE 802.11i
         * WPA = WPA/IEEE 802.11i/D3.0
@@ -209,9 +107,7 @@ public class WifiDirectManager {
         wfc.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP104);
         wfc.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.CCMP);
         wfc.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.TKIP);
-
         wfc.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.OPEN);
-
         //remember id
         int netId = wifi.addNetwork(wfc);
 
@@ -226,38 +122,15 @@ public class WifiDirectManager {
                 break;
             }
         }
-//        int tmpSecurity = getSecurity(tmp);
-
-        ((WifiManagerListener) activity).SendMessage("Net ID = " + netId);
 
         if (netId != -1) {
             wifi.disconnect();
             wifi.enableNetwork(netId, true);
             wifi.reconnect();
             wifi.reassociate();
-//            if(wifi.disconnect()){
-//                if(wifi.enableNetwork(netId, true)){
-//                    if(wifi.reconnect()){
-//                        ConnectivityManager connManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-//                        NetworkInfo networkInfo = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-//
-//                        if (networkInfo.isConnected()) {
-//                            ((WifiManagerListener) activity).SendMessage("Connected");
-//                        }else{
-//                            ((WifiManagerListener) activity).SendMessage("Not connected " + networkInfo.getReason());
-//                        }
-//                    }else{
-//                        ((WifiManagerListener) activity).SendMessage("Problem connecting to wifi network");
-//                    }
-//                }else{
-//                    ((WifiManagerListener) activity).SendMessage("Problem enabling wifi network");
-//                }
-//            }else{
-//                ((WifiManagerListener) activity).SendMessage("Cannot disconnect from previous network");
-//            }
-
         }else{
             ((WifiManagerListener) activity).SendMessage("Cannot connect");
+            EventBus.getDefault().post(new WifiStatusEvent(false));
         }
     }
 

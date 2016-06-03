@@ -123,6 +123,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
         WifiP2pDevice dev = intent.getParcelableExtra(WifiP2pManager.EXTRA_WIFI_P2P_DEVICE);
         if(dev != null) {
             String thisDeviceName = dev.deviceName;
+            EventBus.getDefault().post(new WifiStatusEvent(false));
             ((WifiManagerListener) activity).GetMyDeviceName(thisDeviceName);
         }
 

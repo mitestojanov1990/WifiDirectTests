@@ -3,7 +3,6 @@ package com.wifidirect.appalanche.appalanchewifidirect.Helpers;
 import android.os.Handler;
 import android.util.Log;
 
-import com.wifidirect.appalanche.appalanchewifidirect.Interfaces.WifiManagerListener;
 import com.wifidirect.appalanche.appalanchewifidirect.MessageManager;
 import com.wifidirect.appalanche.appalanchewifidirect.Models.SocketStatusEvent;
 import com.wifidirect.appalanche.appalanchewifidirect.WifiGroupListing;
@@ -75,16 +74,24 @@ public class ClientSocketHandler extends Thread {
                     SendStatusMessage("Socket closing failed :" + e1.getMessage());
                 }
                 if(e.getMessage().contains("ENETUNREACH")){
-                    ((WifiManagerListener)activity).GetSocketStatus(false);
+                    EventBus.getDefault().post(new SocketStatusEvent(false));
                 }
                 if(e.getMessage().contains("ECONNREFUSED")){
-                    ((WifiManagerListener)activity).GetSocketStatus(false);
+                    EventBus.getDefault().post(new SocketStatusEvent(false));
                 }
                 return;
             }
             catch (InterruptedException e) {
                 Log.i("CSH InterruptedEx", e.getMessage());
                 e.printStackTrace();
+                try {
+                    socket.close();
+                    activity.IsSocketConnected = false;
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                    Log.i("CSH close run", e.getMessage());
+                    SendStatusMessage("Socket closing failed :" + e1.getMessage());
+                }
             }
 //            try {
 //                sleep(1000);

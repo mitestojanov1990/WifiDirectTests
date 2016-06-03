@@ -11,7 +11,7 @@ import android.net.wifi.p2p.WifiP2pManager;
 import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceInfo;
 import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceRequest;
 
-import com.wifidirect.appalanche.appalanchewifidirect.Interfaces.WifiManagerListener;
+import com.wifidirect.appalanche.appalanchewifidirect.Interfaces.WifiGroupManagerListener;
 import com.wifidirect.appalanche.appalanchewifidirect.Models.WifiServiceTxtRecord;
 
 import java.util.ArrayList;
@@ -228,7 +228,7 @@ public class WifiDirectManager {
         }
 //        int tmpSecurity = getSecurity(tmp);
 
-        ((WifiManagerListener) activity).SendMessage("Net ID = " + netId);
+        ((WifiGroupManagerListener) activity).SendMessage("Net ID = " + netId);
 
         if (netId != -1) {
             wifi.disconnect();
@@ -257,13 +257,13 @@ public class WifiDirectManager {
 //            }
 
         }else{
-            ((WifiManagerListener) activity).SendMessage("Cannot connect");
+            ((WifiGroupManagerListener) activity).SendMessage("Cannot connect");
         }
     }
 
     public void DisconnectFromWifi(){
         wifi.disconnect();
-        ((WifiManagerListener) activity).SendMessage("Disconnected");
+        ((WifiGroupManagerListener) activity).SendMessage("Disconnected");
     }
 
     public void ConnectToDevice(WifiP2pConfig config, WifiP2pManager.ActionListener listener){

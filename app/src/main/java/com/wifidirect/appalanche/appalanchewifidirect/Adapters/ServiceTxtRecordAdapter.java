@@ -10,7 +10,7 @@ import android.widget.TextView;
 
 import com.wifidirect.appalanche.appalanchewifidirect.Models.WifiServiceTxtRecord;
 import com.wifidirect.appalanche.appalanchewifidirect.R;
-import com.wifidirect.appalanche.appalanchewifidirect.WifiGroupListing;
+import com.wifidirect.appalanche.appalanchewifidirect.WifiGroupManager;
 
 import java.util.ArrayList;
 
@@ -73,7 +73,7 @@ public class ServiceTxtRecordAdapter extends RecyclerView.Adapter<ServiceTxtReco
                 if (userGroupDataSet.size() > 0) {
                     WifiServiceTxtRecord tmp = userGroupDataSet.get(listPosition);
 
-                    WifiGroupListing.WifiTxtRecordOnClick(tmp);
+                    WifiGroupManager.WifiTxtRecordOnClick(tmp);
                     //tmp.setIsConnected(true);
                     notifyDataSetChanged();
                 }
@@ -84,7 +84,7 @@ public class ServiceTxtRecordAdapter extends RecyclerView.Adapter<ServiceTxtReco
             public void onClick(View v) {
                 if (userGroupDataSet.size() > 0) {
                     WifiServiceTxtRecord tmp = userGroupDataSet.get(listPosition);
-                    WifiGroupListing.onConnectToSocket(tmp.getServerIp());
+                    WifiGroupManager.onConnectToSocket(tmp.getServerIp());
                     //tmp.setIsConnected(true);
                     notifyDataSetChanged();
                 }

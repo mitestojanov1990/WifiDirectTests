@@ -79,7 +79,7 @@ public class MessageManager implements Runnable {
     }
 
     public void write(byte[] buffer) {
-        if (WifiGroupListing.IsDisconnected) {
+        if (WifiGroupManager.IsDisconnected) {
             Log.d(Constants.TAG_LOG, "Client disconnected!!");
             _threadIsAlive = false;
             return;

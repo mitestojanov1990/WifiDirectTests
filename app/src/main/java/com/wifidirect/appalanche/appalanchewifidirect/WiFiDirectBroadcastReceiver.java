@@ -16,10 +16,7 @@ import android.util.Log;
 
 import com.wifidirect.appalanche.appalanchewifidirect.Helpers.Constants;
 import com.wifidirect.appalanche.appalanchewifidirect.Interfaces.FragmentChangeListener;
-import com.wifidirect.appalanche.appalanchewifidirect.Interfaces.WifiManagerListener;
-import com.wifidirect.appalanche.appalanchewifidirect.Models.WifiStatusEvent;
-
-import org.greenrobot.eventbus.EventBus;
+import com.wifidirect.appalanche.appalanchewifidirect.Interfaces.WifiGroupManagerListener;
 
 import java.math.BigInteger;
 import java.net.InetAddress;
@@ -64,7 +61,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
 
     private void GetWifiInfo(WifiManager wifiManager){
         if(wifiManager != null) {
-            ((WifiManagerListener) activity).SendMessage("Connected");
+            ((WifiGroupManagerListener) activity).SendMessage("Connected");
 
             WifiInfo wifiInfo = wifiManager.getConnectionInfo();
             int ipAddress = wifiInfo.getIpAddress();
@@ -77,17 +74,17 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
             try {
                 ipAddressString = InetAddress.getByAddress(ipByteArray).getHostAddress();
             } catch (UnknownHostException ex) {
-                ((WifiManagerListener) activity).SendMessage("Unable to get host address.");
+                ((WifiGroupManagerListener) activity).SendMessage("Unable to get host address.");
                 ipAddressString = null;
             }
             int tmpRssi = wifiInfo.getRssi();
             int signalLevel = wifiManager.calculateSignalLevel(tmpRssi, 10);
 
-            ((WifiManagerListener) activity).SendMessage("Ip Address: " + ipAddressString + " Signal Level: " + signalLevel);
+            ((WifiGroupManagerListener) activity).SendMessage("Ip Address: " + ipAddressString + " Signal Level: " + signalLevel);
 
-            ((WifiManagerListener) activity).SendMessage("Error, Net ID is -1");
+            ((WifiGroupManagerListener) activity).SendMessage("Error, Net ID is -1");
 
-            EventBus.getDefault().post(new WifiStatusEvent(true));
+            ((WifiGroupManagerListener) activity).GetWifiStatus(true);
         }
     }
 
@@ -113,8 +110,8 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
                     }
                 } else {
                     if (activity != null) {
-                        EventBus.getDefault().post(new WifiStatusEvent(false));
-                        ((WifiManagerListener) activity).SendMessage("Not connected");
+                        ((WifiGroupManagerListener) activity).GetWifiStatus(false);
+                        ((WifiGroupManagerListener) activity).SendMessage("Not connected");
                     }
                 }
             }
@@ -123,7 +120,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
         WifiP2pDevice dev = intent.getParcelableExtra(WifiP2pManager.EXTRA_WIFI_P2P_DEVICE);
         if(dev != null) {
             String thisDeviceName = dev.deviceName;
-            ((WifiManagerListener) activity).GetMyDeviceName(thisDeviceName);
+            ((WifiGroupManagerListener) activity).GetMyDeviceName(thisDeviceName);
         }
 
 
@@ -142,8 +139,8 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
             } else {
                 // It's a disconnect
                 Log.d(Constants.TAG_LOG, "It is a disconnect");
-                if (!WifiGroupListing.IsServer) {
-                    WifiGroupListing.IsDisconnected = true;
+                if (!WifiGroupManager.IsServer) {
+                    WifiGroupManager.IsDisconnected = true;
                     ((FragmentChangeListener) activity).OnChangeToSubview(Constants.ID_MAIN_PAGE);
                 }
             }

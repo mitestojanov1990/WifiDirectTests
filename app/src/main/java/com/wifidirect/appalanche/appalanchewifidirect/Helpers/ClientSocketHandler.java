@@ -3,12 +3,9 @@ package com.wifidirect.appalanche.appalanchewifidirect.Helpers;
 import android.os.Handler;
 import android.util.Log;
 
-import com.wifidirect.appalanche.appalanchewifidirect.Interfaces.WifiManagerListener;
+import com.wifidirect.appalanche.appalanchewifidirect.Interfaces.WifiGroupManagerListener;
 import com.wifidirect.appalanche.appalanchewifidirect.MessageManager;
-import com.wifidirect.appalanche.appalanchewifidirect.Models.SocketStatusEvent;
-import com.wifidirect.appalanche.appalanchewifidirect.WifiGroupListing;
-
-import org.greenrobot.eventbus.EventBus;
+import com.wifidirect.appalanche.appalanchewifidirect.WifiGroupManager;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -20,13 +17,13 @@ public class ClientSocketHandler extends Thread {
     private Handler handler;
     private MessageManager _messageHandler;
     private InetAddress _address;
-    static private WifiGroupListing activity;
+    static private WifiGroupManager activity;
 
     Thread t = null;
 
     private boolean isAlive = true;
 
-    public ClientSocketHandler(Handler handler, InetAddress groupOwnerAddress, WifiGroupListing activity) {
+    public ClientSocketHandler(Handler handler, InetAddress groupOwnerAddress, WifiGroupManager activity) {
         this.handler = handler;
         this._address = groupOwnerAddress;
         this.activity = activity;
@@ -39,7 +36,7 @@ public class ClientSocketHandler extends Thread {
     public void CheckConnection(){
         while(true){
             if(!IsSocketConnected()){
-                EventBus.getDefault().post(new SocketStatusEvent(false));
+                ((WifiGroupManagerListener)activity).GetSocketStatus(false);
                 break;
             }
         }
@@ -75,10 +72,10 @@ public class ClientSocketHandler extends Thread {
                     SendStatusMessage("Socket closing failed :" + e1.getMessage());
                 }
                 if(e.getMessage().contains("ENETUNREACH")){
-                    ((WifiManagerListener)activity).GetSocketStatus(false);
+                    ((WifiGroupManagerListener)activity).SocketProblemDisconnect(false);
                 }
                 if(e.getMessage().contains("ECONNREFUSED")){
-                    ((WifiManagerListener)activity).GetSocketStatus(false);
+                    ((WifiGroupManagerListener)activity).SocketProblemDisconnect(false);
                 }
                 return;
             }

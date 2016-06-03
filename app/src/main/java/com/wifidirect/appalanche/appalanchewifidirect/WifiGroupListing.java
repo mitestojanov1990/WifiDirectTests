@@ -510,8 +510,12 @@ public class WifiGroupListing extends AppCompatActivity implements
                     String passphrase = group.getPassphrase();
 
                     wifiDirectManager.RemoveGroup(listener);
-                    if(IsServer)
-                    ConnectedClientManagers.clear();
+
+                    if(IsServer) {
+                        ConnectedClientManagers.clear();
+                        GroupOwnerSocketHandler.CloseSocket();
+                        _serverThreadCreated = false;
+                    }
                 }else{
                     listener.onSuccess();
                     appendStatus("Group not found/dc");
@@ -906,8 +910,8 @@ public class WifiGroupListing extends AppCompatActivity implements
     }
 
     public void appendStatus(String status) {
-        if(eventBus != null)
-            eventBus.post(new WifiMessageEvent(status));
+        //if(eventBus != null)
+            //   eventBus.post(new WifiMessageEvent(status));
         String current = statusTxtView.getText().toString();
         statusTxtView.setText(current + "\n" + status);
         Log.d(Constants.TAG_LOG, status);

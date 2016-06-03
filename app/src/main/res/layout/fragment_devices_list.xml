@@ -102,10 +102,10 @@
             android:layout_height="wrap_content"
             android:text="Disconnect"
             android:id="@+id/DisconnectBtn"
-            android:layout_marginTop="56dp"
+            android:layout_marginTop="78dp"
             android:layout_below="@+id/discoveryStartBtn"
-            android:layout_toRightOf="@+id/RemoveGroupBtn"
-            android:layout_toEndOf="@+id/RemoveGroupBtn" />
+            android:layout_alignRight="@+id/discoveryStartBtn"
+            android:layout_alignEnd="@+id/discoveryStartBtn" />
 
         <Button
             android:layout_width="wrap_content"

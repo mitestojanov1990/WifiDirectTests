@@ -124,14 +124,14 @@ public class WifiDirectManager {
 
         ((WifiGroupManagerListener) activity).SendMessage("Net ID = " + netId);
 
-        if (netId != -1) {
+        //if (netId != -1) {
             wifi.disconnect();
             wifi.enableNetwork(netId, true);
             wifi.reconnect();
             wifi.reassociate();
-        }else{
-            ((WifiGroupManagerListener) activity).SendMessage("Cannot connect");
-        }
+        //}else{
+            //((WifiGroupManagerListener) activity).SendMessage("Cannot connect");
+        //}
     }
 
     public void DisconnectFromWifi(){

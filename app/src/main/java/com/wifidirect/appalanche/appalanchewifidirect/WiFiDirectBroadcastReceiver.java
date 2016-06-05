@@ -111,7 +111,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
                 } else {
                     if (activity != null) {
                         ((WifiGroupManagerListener) activity).GetWifiStatus(false);
-                        ((WifiGroupManagerListener) activity).SendMessage("Not connected");
+                        //((WifiGroupManagerListener) activity).SendMessage("Not connected");
                     }
                 }
             }

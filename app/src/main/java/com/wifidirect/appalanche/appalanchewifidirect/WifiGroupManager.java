@@ -143,7 +143,6 @@ public class WifiGroupManager extends AppCompatActivity implements
     }
 
 
-
     public WifiGroupManager getInstance(Activity activity, Handler h, Handler rgiHandler, Handler cfacHandler, Handler rdHandler){
         if(instance == null){
             instance = new WifiGroupManager(activity, h, rgiHandler, cfacHandler, rdHandler);
@@ -398,8 +397,8 @@ public class WifiGroupManager extends AppCompatActivity implements
             //}
         } else {
             // Create Group
-            if (!GroupCreated)
-                CreateGroup();
+            //if (!GroupCreated)
+                //CreateGroup();
         }
         reDiscoverServices(true);
     }
@@ -408,26 +407,27 @@ public class WifiGroupManager extends AppCompatActivity implements
         WifiServiceTxtRecord tmp = wifiDirectManager.GetByHighestPriority();
         if(tmp != null) {
             appendStatus("Priority: " + tmp.getUserID());
-            if (curRecord == null) {
+            if (curRecord == null || !IsConnected) {
                 CheckAndConnect(tmp);
-            } else if (tmp.getUserID() > curRecord.getUserID()) {
+            }
+            else if (tmp.getUserID() > curRecord.getUserID()) {
                 CheckAndConnect(tmp);
             }else{
                 if(!IsSocketConnected){
-                    ConnectToSocket();
+                    //ConnectToSocket();
                 }
             }
         }
     }
     private void CheckAndConnect(WifiServiceTxtRecord tmp){
         // Disconnected if connected
-        if(IsConnected){
-            wifiDirectManager.DisconnectFromWifi();
-            IsConnected = false;
+        if(!IsConnected){
+//            wifiDirectManager.DisconnectFromWifi();
+//            IsConnected = false;
+            // Connect
+            curRecord = tmp;
+            ConnectToWifi(curRecord.getSSID(), curRecord.getPassPhrase());
         }
-        // Connect
-        curRecord = tmp;
-        ConnectToWifi(curRecord.getSSID(), curRecord.getPassPhrase());
     }
 
     private void SetRecyclerView(){
@@ -911,7 +911,7 @@ public class WifiGroupManager extends AppCompatActivity implements
         try {
             tmpAdd = InetAddress.getByName(addr);
 
-            //handler = new ClientSocketHandler(getHandler(), tmpAdd, (WifiGroupManager)curActivity);
+           // handler = new ClientSocketHandler(getHandler(), tmpAdd, (WifiGroupManager)curActivity);
             handler = new ClientSocketHandler(this.getHandler(), tmpAdd, this);
             handler.start();
 
@@ -1289,13 +1289,13 @@ public class WifiGroupManager extends AppCompatActivity implements
 
     @Override
     public void SetServerIpAddress(String addr){
-        CreateClientSocket(addr);
+        //CreateClientSocket(addr);
     }
 
     @Override
     public void ConnectToSocket(){
-        if(curRecord != null)
-            CreateClientSocket(curRecord.getServerIp());
+        //if(curRecord != null)
+            //CreateClientSocket(curRecord.getServerIp());
     }
 
     @Override
@@ -1313,7 +1313,7 @@ public class WifiGroupManager extends AppCompatActivity implements
 
     @Override
     public void GetSocketStatus(boolean isConnected){
-        if(isConnected){
+        if(!isConnected){
             appendStatus("Socket is not connected.. do something");
             IsSocketConnected = false;
             //ConnectToSocket();

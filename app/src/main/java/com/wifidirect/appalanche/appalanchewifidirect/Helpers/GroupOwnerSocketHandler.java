@@ -69,10 +69,12 @@ public class GroupOwnerSocketHandler extends Thread {
             try {
                 // A blocking operation. Initiate a MessageManager instance when there is a new connection
                 Log.d(Constants.TAG_LOG, "Before create MessageManager");
-                Socket tmp = socket.accept();
-                MessageManager mgr = new MessageManager(tmp, handler);
-                WifiGroupManager.ConnectedClientManagers.add(mgr);
-                pool.execute(mgr);
+                //if(!activity.IsServer) {
+                    Socket tmp = socket.accept();
+                    MessageManager mgr = new MessageManager(tmp, handler);
+                    WifiGroupManager.ConnectedClientManagers.add(mgr);
+                    pool.execute(mgr);
+                //}
                 Log.d(Constants.TAG_LOG, "Launching the I/O handler (server)");
                 SendStatusMessage("Launching the I/O handler (server)");
             } catch (IOException e) {

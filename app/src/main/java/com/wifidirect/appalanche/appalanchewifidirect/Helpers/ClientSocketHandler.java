@@ -3,9 +3,13 @@ package com.wifidirect.appalanche.appalanchewifidirect.Helpers;
 import android.os.Handler;
 import android.util.Log;
 
-import com.wifidirect.appalanche.appalanchewifidirect.Interfaces.WifiGroupManagerListener;
+import com.wifidirect.appalanche.appalanchewifidirect.Events.SocketProblemEvent;
+import com.wifidirect.appalanche.appalanchewifidirect.Events.SocketStatusEvent;
+import com.wifidirect.appalanche.appalanchewifidirect.Events.WifiMessageEvent;
 import com.wifidirect.appalanche.appalanchewifidirect.MessageManager;
 import com.wifidirect.appalanche.appalanchewifidirect.WifiGroupManager;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -17,16 +21,18 @@ public class ClientSocketHandler extends Thread {
     private Handler handler;
     private MessageManager _messageHandler;
     private InetAddress _address;
+    private EventBus eventBus;
     static private WifiGroupManager activity;
 
     Thread t = null;
 
     private boolean isAlive = true;
 
-    public ClientSocketHandler(Handler handler, InetAddress groupOwnerAddress, WifiGroupManager activity) {
+    public ClientSocketHandler(Handler handler, InetAddress groupOwnerAddress, WifiGroupManager activity, EventBus eventBus) {
         this.handler = handler;
         this._address = groupOwnerAddress;
         this.activity = activity;
+        this.eventBus = eventBus;
     }
 
     public boolean IsSocketConnected(){
@@ -36,7 +42,8 @@ public class ClientSocketHandler extends Thread {
     public void CheckConnection(){
         while(true){
             if(!IsSocketConnected()){
-                ((WifiGroupManagerListener)activity).GetSocketStatus(false);
+                //((WifiGroupManagerListener)activity).GetSocketStatus(false);
+                eventBus.post(new SocketStatusEvent(false));
                 break;
             }
         }
@@ -72,10 +79,12 @@ public class ClientSocketHandler extends Thread {
                     SendStatusMessage("Socket closing failed :" + e1.getMessage());
                 }
                 if(e.getMessage().contains("ENETUNREACH")){
-                    ((WifiGroupManagerListener)activity).SocketProblemDisconnect(false);
+                    //((WifiGroupManagerListener)activity).SocketProblemDisconnect(false);
+                    eventBus.post(new SocketStatusEvent(false));
                 }
                 if(e.getMessage().contains("ECONNREFUSED")){
-                    ((WifiGroupManagerListener)activity).SocketProblemDisconnect(false);
+                    //((WifiGroupManagerListener)activity).SocketProblemDisconnect(false);
+                    eventBus.post(new SocketProblemEvent(false));
                 }
                 return;
             }
@@ -102,11 +111,12 @@ public class ClientSocketHandler extends Thread {
     }
 
     private void SendStatusMessage(final String msg){
-        activity.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                activity.appendStatus(msg);
-            }
-        });
+        eventBus.post(new WifiMessageEvent(msg));
+//        activity.runOnUiThread(new Runnable() {
+//            @Override
+//            public void run() {
+//                activity.appendStatus(msg);
+//            }
+//        });
     }
 }

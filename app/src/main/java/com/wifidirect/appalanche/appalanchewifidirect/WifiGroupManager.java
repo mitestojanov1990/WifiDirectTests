@@ -1115,13 +1115,18 @@ public class WifiGroupManager extends AppCompatActivity implements
 
     @Override
     public void onDestroy(){
+        CloseAllConnections();
+        finish();
+        super.onDestroy();
+
+    }
+
+    public void CloseAllConnections(){
         resetData(false);
         DisconnectFromWifi();
         RemoveServiceRequest();
         StopLocalService();
-        finish();
-        super.onDestroy();
-
+        wifiDirectManager.getWifiManager().disconnect();
     }
     @Override
     public void onPause() {

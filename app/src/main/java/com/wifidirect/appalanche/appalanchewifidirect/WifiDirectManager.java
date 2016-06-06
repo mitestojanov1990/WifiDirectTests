@@ -64,6 +64,9 @@ public class WifiDirectManager {
     public WifiP2pManager getWifiP2pManager(){
         return manager;
     }
+    public WifiManager getWifiManager(){
+        return wifi;
+    }
     public WifiP2pManager.Channel getChannel(){
         return _channel;
     }

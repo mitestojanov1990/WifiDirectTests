@@ -1,6 +1,5 @@
 package com.wifidirect.appalanche.appalanchewifidirect.Adapters;
 
-import android.app.Activity;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,9 +7,12 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.wifidirect.appalanche.appalanchewifidirect.Events.ServerIpEvent;
+import com.wifidirect.appalanche.appalanchewifidirect.Events.WifiServiceTxtRecordEvent;
 import com.wifidirect.appalanche.appalanchewifidirect.Models.WifiServiceTxtRecord;
 import com.wifidirect.appalanche.appalanchewifidirect.R;
-import com.wifidirect.appalanche.appalanchewifidirect.WifiGroupManager;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.util.ArrayList;
 
@@ -18,7 +20,7 @@ public class ServiceTxtRecordAdapter extends RecyclerView.Adapter<ServiceTxtReco
 
     private ArrayList<WifiServiceTxtRecord> userGroupDataSet;
 
-    private Activity currentActivity;
+    private EventBus eventBus;
 
     private ServiceTxtRecordAdapter instance;
 
@@ -42,9 +44,9 @@ public class ServiceTxtRecordAdapter extends RecyclerView.Adapter<ServiceTxtReco
         }
     }
 
-    public ServiceTxtRecordAdapter(ArrayList<WifiServiceTxtRecord> userGroups, Activity tmpActivity) {
+    public ServiceTxtRecordAdapter(ArrayList<WifiServiceTxtRecord> userGroups, EventBus eventBus) {
         this.userGroupDataSet = userGroups;
-        this.currentActivity = tmpActivity;
+        this.eventBus = eventBus;
     }
 
     @Override
@@ -73,7 +75,8 @@ public class ServiceTxtRecordAdapter extends RecyclerView.Adapter<ServiceTxtReco
                 if (userGroupDataSet.size() > 0) {
                     WifiServiceTxtRecord tmp = userGroupDataSet.get(listPosition);
 
-                    WifiGroupManager.WifiTxtRecordOnClick(tmp);
+                    //WifiGroupManager.WifiTxtRecordOnClick(tmp);
+                    eventBus.post(new WifiServiceTxtRecordEvent(tmp));
                     //tmp.setIsConnected(true);
                     notifyDataSetChanged();
                 }
@@ -84,7 +87,8 @@ public class ServiceTxtRecordAdapter extends RecyclerView.Adapter<ServiceTxtReco
             public void onClick(View v) {
                 if (userGroupDataSet.size() > 0) {
                     WifiServiceTxtRecord tmp = userGroupDataSet.get(listPosition);
-                    WifiGroupManager.onConnectToSocket(tmp.getServerIp());
+                    //WifiGroupManager.onConnectToSocket(tmp.getServerIp());
+                    eventBus.post(new ServerIpEvent(tmp.getServerIp()));
                     //tmp.setIsConnected(true);
                     notifyDataSetChanged();
                 }

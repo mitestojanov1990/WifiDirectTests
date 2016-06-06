@@ -3,8 +3,12 @@ package com.wifidirect.appalanche.appalanchewifidirect.Helpers;
 import android.os.Handler;
 import android.util.Log;
 
+import com.wifidirect.appalanche.appalanchewifidirect.Events.ConnectedClientEvent;
+import com.wifidirect.appalanche.appalanchewifidirect.Events.WifiMessageEvent;
 import com.wifidirect.appalanche.appalanchewifidirect.MessageManager;
 import com.wifidirect.appalanche.appalanchewifidirect.WifiGroupManager;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -20,16 +24,18 @@ public class GroupOwnerSocketHandler extends Thread {
     private final int THREAD_COUNT = 10;
     private Handler handler;
     private static WifiGroupManager activity;
+    private EventBus eventBus;
 
     private SocketAddress myIP;
 
-    public GroupOwnerSocketHandler(Handler handler, WifiGroupManager activity) throws IOException {
+    public GroupOwnerSocketHandler(Handler handler, WifiGroupManager activity, EventBus eventBus) throws IOException {
 
         try {
             socket = new ServerSocket(Constants.SERVER_PORT);
             myIP = socket.getLocalSocketAddress();
             this.handler = handler;
             this.activity = activity;
+            this.eventBus = eventBus;
             Log.d(Constants.TAG_LOG, "Server Socket Started");
             SendStatusMessage("Server Socket Started");
             //socket.setSoTimeout(10000);
@@ -47,9 +53,7 @@ public class GroupOwnerSocketHandler extends Thread {
         if(socket != null && socket.isClosed() == false){
             try {
                 socket.close();
-                SendStatusMessage("Server Socket closed");
             } catch (IOException e) {
-                SendStatusMessage("Server Socket close failed :" + e.toString());
                 Log.i("GOSClose CloseSocket", e.toString());
                 e.printStackTrace();
             }
@@ -70,10 +74,11 @@ public class GroupOwnerSocketHandler extends Thread {
                 // A blocking operation. Initiate a MessageManager instance when there is a new connection
                 Log.d(Constants.TAG_LOG, "Before create MessageManager");
                 //if(!activity.IsServer) {
-                    Socket tmp = socket.accept();
-                    MessageManager mgr = new MessageManager(tmp, handler);
-                    WifiGroupManager.ConnectedClientManagers.add(mgr);
-                    pool.execute(mgr);
+                Socket tmp = socket.accept();
+                MessageManager mgr = new MessageManager(tmp, handler);
+                //WifiGroupManager.ConnectedClientManagers.add(mgr);
+                eventBus.post(new ConnectedClientEvent(mgr));
+                pool.execute(mgr);
                 //}
                 Log.d(Constants.TAG_LOG, "Launching the I/O handler (server)");
                 SendStatusMessage("Launching the I/O handler (server)");
@@ -96,15 +101,16 @@ public class GroupOwnerSocketHandler extends Thread {
     }
 
 
-    private static void SendStatusMessage(final String msg){
-        if(activity != null) {
-            activity.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    activity.appendStatus(msg);
-                }
-            });
-        }
+    private void SendStatusMessage(final String msg){
+        eventBus.post(new WifiMessageEvent(msg));
+//        if(activity != null) {
+//            activity.runOnUiThread(new Runnable() {
+//                @Override
+//                public void run() {
+//                    activity.appendStatus(msg);
+//                }
+//            });
+//        }
     }
 
 }

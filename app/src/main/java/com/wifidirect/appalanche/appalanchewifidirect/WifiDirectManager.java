@@ -11,8 +11,10 @@ import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceInfo;
 import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceRequest;
 import android.util.Log;
 
-import com.wifidirect.appalanche.appalanchewifidirect.Interfaces.WifiGroupManagerListener;
+import com.wifidirect.appalanche.appalanchewifidirect.Events.WifiMessageEvent;
 import com.wifidirect.appalanche.appalanchewifidirect.Models.WifiServiceTxtRecord;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,6 +24,7 @@ import java.util.Map;
 public class WifiDirectManager {
     private Context context;
     private Activity activity;
+    private EventBus eventBus;
 
     private final IntentFilter intentFilter = new IntentFilter();
 
@@ -39,11 +42,12 @@ public class WifiDirectManager {
     private String ServerIp;
     private String UserID;
 
-    public WifiDirectManager(Context context, Activity activity, IntentFilter intentFilter){
+    public WifiDirectManager(Context context, Activity activity, IntentFilter intentFilter, EventBus eventBus){
 
         this.context = context;
         this.activity = activity;
         intentFilter = intentFilter;
+        this.eventBus = eventBus;
 
         wifi = (WifiManager)this.context.getSystemService(Context.WIFI_SERVICE);
 
@@ -54,9 +58,9 @@ public class WifiDirectManager {
     }
 
     private static WifiDirectManager instance = null;
-    public static WifiDirectManager getInstance(Context context, Activity activity, IntentFilter intentFilter) {
+    public static WifiDirectManager getInstance(Context context, Activity activity, IntentFilter intentFilter, EventBus eventBus) {
         if(instance == null) {
-            instance = new WifiDirectManager(context, activity, intentFilter);
+            instance = new WifiDirectManager(context, activity, intentFilter, eventBus);
         }
         return instance;
     }
@@ -129,7 +133,8 @@ public class WifiDirectManager {
         }
 //        int tmpSecurity = getSecurity(tmp);
 
-        ((WifiGroupManagerListener) activity).SendMessage("Net ID = " + netId);
+        //((WifiGroupManagerListener) activity).SendMessage("Net ID = " + netId);
+        eventBus.post(new WifiMessageEvent("Net ID = " + netId));
 
         //if (netId != -1) {
             wifi.disconnect();
@@ -143,7 +148,8 @@ public class WifiDirectManager {
 
     public void DisconnectFromWifi(){
         wifi.disconnect();
-        ((WifiGroupManagerListener) activity).SendMessage("Disconnected");
+        //((WifiGroupManagerListener) activity).SendMessage("Disconnected");
+        eventBus.post(new WifiMessageEvent("Disconnected"));
     }
 
     public void ConnectToDevice(WifiP2pConfig config, WifiP2pManager.ActionListener listener){

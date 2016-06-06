@@ -14,9 +14,12 @@ import android.net.wifi.p2p.WifiP2pManager;
 import android.net.wifi.p2p.WifiP2pManager.Channel;
 import android.util.Log;
 
+import com.wifidirect.appalanche.appalanchewifidirect.Events.MyDeviceNameEvent;
+import com.wifidirect.appalanche.appalanchewifidirect.Events.WifiMessageEvent;
+import com.wifidirect.appalanche.appalanchewifidirect.Events.WifiStatusEvent;
 import com.wifidirect.appalanche.appalanchewifidirect.Helpers.Constants;
-import com.wifidirect.appalanche.appalanchewifidirect.Interfaces.FragmentChangeListener;
-import com.wifidirect.appalanche.appalanchewifidirect.Interfaces.WifiGroupManagerListener;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.math.BigInteger;
 import java.net.InetAddress;
@@ -31,15 +34,17 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
     private WifiP2pManager manager;
     private Channel channel;
     private Activity activity = null;
+    private EventBus eventBus;
 
     public WiFiDirectBroadcastReceiver(){
 
     }
-    public WiFiDirectBroadcastReceiver(WifiP2pManager manager,Channel channel, Activity activity) {
+    public WiFiDirectBroadcastReceiver(WifiP2pManager manager,Channel channel, Activity activity, EventBus eventBus) {
         super();
         this.manager = manager;
         this.channel = channel;
         this.activity = activity;
+        this.eventBus = eventBus;
     }
 
     private String getDeviceStatus(int status) {
@@ -61,7 +66,8 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
 
     private void GetWifiInfo(WifiManager wifiManager){
         if(wifiManager != null) {
-            ((WifiGroupManagerListener) activity).SendMessage("Connected");
+            //((WifiGroupManagerListener) activity).SendMessage("Connected");
+            eventBus.post(new WifiMessageEvent("Connected"));
 
             WifiInfo wifiInfo = wifiManager.getConnectionInfo();
             int ipAddress = wifiInfo.getIpAddress();
@@ -74,17 +80,21 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
             try {
                 ipAddressString = InetAddress.getByAddress(ipByteArray).getHostAddress();
             } catch (UnknownHostException ex) {
-                ((WifiGroupManagerListener) activity).SendMessage("Unable to get host address.");
+                //((WifiGroupManagerListener) activity).SendMessage("Unable to get host address.");
+                eventBus.post(new WifiMessageEvent("Unable to get host address."));
                 ipAddressString = null;
             }
             int tmpRssi = wifiInfo.getRssi();
             int signalLevel = wifiManager.calculateSignalLevel(tmpRssi, 10);
 
-            ((WifiGroupManagerListener) activity).SendMessage("Ip Address: " + ipAddressString + " Signal Level: " + signalLevel);
+            //((WifiGroupManagerListener) activity).SendMessage("Ip Address: " + ipAddressString + " Signal Level: " + signalLevel);
+            eventBus.post(new WifiMessageEvent("Ip Address: " + ipAddressString + " Signal Level: " + signalLevel));
 
-            ((WifiGroupManagerListener) activity).SendMessage("Error, Net ID is -1");
+            //((WifiGroupManagerListener) activity).SendMessage("Error, Net ID is -1");
+            eventBus.post(new WifiMessageEvent("Error, Net ID is -1"));
 
-            ((WifiGroupManagerListener) activity).GetWifiStatus(true);
+            //((WifiGroupManagerListener) activity).GetWifiStatus(true);
+            eventBus.post(new WifiStatusEvent(true));
         }
     }
 
@@ -110,8 +120,8 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
                     }
                 } else {
                     if (activity != null) {
-                        ((WifiGroupManagerListener) activity).GetWifiStatus(false);
-                        //((WifiGroupManagerListener) activity).SendMessage("Not connected");
+                        //((WifiGroupManagerListener) activity).GetWifiStatus(false);
+                        eventBus.post(new WifiStatusEvent(false));
                     }
                 }
             }
@@ -120,7 +130,8 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
         WifiP2pDevice dev = intent.getParcelableExtra(WifiP2pManager.EXTRA_WIFI_P2P_DEVICE);
         if(dev != null) {
             String thisDeviceName = dev.deviceName;
-            ((WifiGroupManagerListener) activity).GetMyDeviceName(thisDeviceName);
+            //((WifiGroupManagerListener) activity).GetMyDeviceName(thisDeviceName);
+            eventBus.post(new MyDeviceNameEvent(thisDeviceName));
         }
 
 
@@ -141,7 +152,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
                 Log.d(Constants.TAG_LOG, "It is a disconnect");
                 if (!WifiGroupManager.IsServer) {
                     WifiGroupManager.IsDisconnected = true;
-                    ((FragmentChangeListener) activity).OnChangeToSubview(Constants.ID_MAIN_PAGE);
+                    //((FragmentChangeListener) activity).OnChangeToSubview(Constants.ID_MAIN_PAGE);
                 }
             }
         } else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {
@@ -158,8 +169,8 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
                 Log.d(Constants.TAG_LOG, "WFD NOT enabled");
             }
         }else if(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION.equals(action)){
-            manager.requestPeers(channel, (WifiP2pManager.PeerListListener) activity);
-            ((FragmentChangeListener)activity).OnChangeToSubview(Constants.PEERS_AVAILABLE);
+            //manager.requestPeers(channel, (WifiP2pManager.PeerListListener) activity);
+            //((FragmentChangeListener)activity).OnChangeToSubview(Constants.PEERS_AVAILABLE);
         }
     }
 }

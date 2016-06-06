@@ -65,6 +65,10 @@ public class WifiDirectManager {
         return instance;
     }
 
+    public void setEventBus(EventBus eventBus){
+        this.eventBus = eventBus;
+    }
+
     public WifiP2pManager getWifiP2pManager(){
         return manager;
     }
@@ -134,7 +138,8 @@ public class WifiDirectManager {
 //        int tmpSecurity = getSecurity(tmp);
 
         //((WifiGroupManagerListener) activity).SendMessage("Net ID = " + netId);
-        eventBus.post(new WifiMessageEvent("Net ID = " + netId));
+        if(eventBus != null)
+            eventBus.post(new WifiMessageEvent("Net ID = " + netId));
 
         //if (netId != -1) {
             wifi.disconnect();
@@ -149,7 +154,8 @@ public class WifiDirectManager {
     public void DisconnectFromWifi(){
         wifi.disconnect();
         //((WifiGroupManagerListener) activity).SendMessage("Disconnected");
-        eventBus.post(new WifiMessageEvent("Disconnected"));
+        if(eventBus != null)
+            eventBus.post(new WifiMessageEvent("Disconnected"));
     }
 
     public void ConnectToDevice(WifiP2pConfig config, WifiP2pManager.ActionListener listener){

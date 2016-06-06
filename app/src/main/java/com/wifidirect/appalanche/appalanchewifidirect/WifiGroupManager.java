@@ -1109,6 +1109,8 @@ public class WifiGroupManager extends AppCompatActivity implements
         if (!EventBus.getDefault().isRegistered(this)) {
             EventBus.getDefault().register(this);
             RegisterEvent(EventBus.getDefault());
+            if(wifiDirectManager != null)
+                wifiDirectManager.setEventBus(eventBus);
         }
         SetBroadcastReceiver();
     }

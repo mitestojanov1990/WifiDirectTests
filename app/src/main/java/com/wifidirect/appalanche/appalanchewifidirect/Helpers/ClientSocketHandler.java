@@ -72,7 +72,8 @@ public class ClientSocketHandler extends Thread {
                 SendStatusMessage("Socket failed :" + e.getMessage());
                 try {
                     socket.close();
-                    activity.IsSocketConnected = false;
+                    //activity.IsSocketConnected = false;
+                    eventBus.post(new SocketStatusEvent(false));
                 } catch (IOException e1) {
                     e1.printStackTrace();
                     Log.i("CSH close run", e.getMessage());
@@ -93,7 +94,8 @@ public class ClientSocketHandler extends Thread {
                 e.printStackTrace();
                 try {
                     socket.close();
-                    activity.IsSocketConnected = false;
+                    //activity.IsSocketConnected = false;
+                    eventBus.post(new SocketStatusEvent(false));
                 } catch (IOException e1) {
                     e1.printStackTrace();
                     Log.i("CSH close run", e.getMessage());

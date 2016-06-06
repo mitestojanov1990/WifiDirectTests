@@ -169,7 +169,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
                 Log.d(Constants.TAG_LOG, "WFD NOT enabled");
             }
         }else if(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION.equals(action)){
-            //manager.requestPeers(channel, (WifiP2pManager.PeerListListener) activity);
+            manager.requestPeers(channel, (WifiP2pManager.PeerListListener) activity);
             //((FragmentChangeListener)activity).OnChangeToSubview(Constants.PEERS_AVAILABLE);
         }
     }

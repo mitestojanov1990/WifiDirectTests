@@ -381,8 +381,8 @@ public class WifiGroupManager extends AppCompatActivity implements
         updateItems(WifiDirectManager.FoundServices);
         appendStatus("Start Wifi Direct Manager");
 
-        SetDnsSdListeners();
-        StartAutomaticSearch();
+        //SetDnsSdListeners();
+        //StartAutomaticSearch();
     }
 
     private void DisconnectFromWifi(){
@@ -1303,9 +1303,9 @@ public class WifiGroupManager extends AppCompatActivity implements
 
     @Subscribe
     public void onEvent(SocketStatusEvent event){
+        IsSocketConnected = event.getIsConnected();
         if(!event.getIsConnected()){
             appendStatus("Socket is not connected.. do something");
-            IsSocketConnected = false;
             if(curRecord != null && IsConnected)
                 CreateClientSocket(curRecord.getServerIp());
         }else{

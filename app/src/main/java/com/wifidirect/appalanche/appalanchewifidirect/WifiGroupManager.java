@@ -158,7 +158,7 @@ public class WifiGroupManager extends AppCompatActivity implements
         return eventBus;
     }
 
-    public void SetBroadcastReceiver(IntentFilter intentFilter){
+    public void SetBroadcastReceiver(){
         if(wifiDirectManager != null){
             _receiver = new WiFiDirectBroadcastReceiver(wifiDirectManager.getWifiP2pManager(), wifiDirectManager.getChannel(), curActivity);
             //_receiver = new WiFiDirectBroadcastReceiver(wifiDirectManager.getWifiP2pManager(), wifiDirectManager.getChannel(), this);
@@ -1105,7 +1105,7 @@ public class WifiGroupManager extends AppCompatActivity implements
     @Override
     public void onResume() {
         super.onResume();
-        SetBroadcastReceiver(intentFilter);
+        SetBroadcastReceiver();
 //        if (!EventBus.getDefault().isRegistered(this)) {
 //            EventBus.getDefault().register(this);
 //            RegisterEvent(EventBus.getDefault());

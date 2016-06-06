@@ -1118,6 +1118,7 @@ public class WifiGroupManager extends AppCompatActivity implements
         DisconnectFromWifi();
         RemoveServiceRequest();
         StopLocalService();
+        wifiDirectManager.getWifiManager().disconnect();
         finish();
         super.onDestroy();
 

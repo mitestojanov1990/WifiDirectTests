@@ -368,8 +368,8 @@ public class WifiGroupManager extends AppCompatActivity implements
         updateItems(WifiDirectManager.FoundServices);
         appendStatus("Start Wifi Direct Manager");
 
-        //SetDnsSdListeners();
-        //StartAutomaticSearch();
+        SetDnsSdListeners();
+        StartAutomaticSearch();
     }
 
     private void DisconnectFromWifi(){
@@ -400,7 +400,8 @@ public class WifiGroupManager extends AppCompatActivity implements
             //if (!GroupCreated)
                 //CreateGroup();
         }
-        reDiscoverServices(true);
+        if(!IsConnected || !IsSocketConnected)
+            reDiscoverServices(true);
     }
 
     private void FindHighestPriorityConnection(){
@@ -413,8 +414,8 @@ public class WifiGroupManager extends AppCompatActivity implements
             else if (tmp.getUserID() > curRecord.getUserID()) {
                 CheckAndConnect(tmp);
             }else{
-                if(!IsSocketConnected){
-                    //ConnectToSocket();
+                if(!IsSocketConnected && IsConnected){
+                    ConnectToSocket();
                 }
             }
         }
@@ -1289,13 +1290,13 @@ public class WifiGroupManager extends AppCompatActivity implements
 
     @Override
     public void SetServerIpAddress(String addr){
-        //CreateClientSocket(addr);
+        CreateClientSocket(addr);
     }
 
     @Override
     public void ConnectToSocket(){
-        //if(curRecord != null)
-            //CreateClientSocket(curRecord.getServerIp());
+        if(curRecord != null && IsConnected)
+            CreateClientSocket(curRecord.getServerIp());
     }
 
     @Override
@@ -1316,7 +1317,7 @@ public class WifiGroupManager extends AppCompatActivity implements
         if(!isConnected){
             appendStatus("Socket is not connected.. do something");
             IsSocketConnected = false;
-            //ConnectToSocket();
+            ConnectToSocket();
         }else{
             appendStatus("Socket is connected..");
         }

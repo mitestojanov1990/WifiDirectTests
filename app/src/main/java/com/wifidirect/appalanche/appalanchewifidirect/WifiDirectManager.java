@@ -9,6 +9,7 @@ import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceInfo;
 import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceRequest;
+import android.util.Log;
 
 import com.wifidirect.appalanche.appalanchewifidirect.Interfaces.WifiGroupManagerListener;
 import com.wifidirect.appalanche.appalanchewifidirect.Models.WifiServiceTxtRecord;
@@ -76,6 +77,7 @@ public class WifiDirectManager {
         wfc.SSID = String.format("\"%s\"", SSID);
         wfc.preSharedKey = String.format("\"%s\"", PassPhrase);
         wfc.status = WifiConfiguration.Status.ENABLED;
+        wfc.priority = 1;
         /*
         * RSN = WPA2/IEEE 802.11i
         * WPA = WPA/IEEE 802.11i/D3.0
@@ -105,16 +107,18 @@ public class WifiDirectManager {
         wfc.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP104);
         wfc.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.CCMP);
         wfc.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.TKIP);
-        wfc.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.OPEN);
+       // wfc.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.OPEN);
         //remember id
         int netId = wifi.addNetwork(wfc);
 
-        boolean changeHappen = wifi.saveConfiguration();
-        boolean hasPing = wifi.pingSupplicant();
+        //boolean changeHappen = wifi.saveConfiguration();
+        //boolean hasPing = wifi.pingSupplicant();
 
         WifiConfiguration tmp = null;
         List<WifiConfiguration> list = wifi.getConfiguredNetworks();
         for( WifiConfiguration i : list ) {
+            Log.i("Wifi Config", "Priorty: " + i.SSID);
+            Log.i("Wifi Config", "Priorty: " + i.priority);
             if(i.SSID != null && i.SSID.equals("\"" + SSID + "\"")) {
                 tmp = i;
                 break;

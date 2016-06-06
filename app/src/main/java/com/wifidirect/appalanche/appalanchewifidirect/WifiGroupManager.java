@@ -397,10 +397,10 @@ public class WifiGroupManager extends AppCompatActivity implements
             //}
         } else {
             // Create Group
-            //if (!GroupCreated)
-                //CreateGroup();
+            if (!GroupCreated)
+                CreateGroup();
         }
-        if(!IsConnected || !IsSocketConnected)
+        if(!GroupCreated && (!IsConnected || !IsSocketConnected))
             reDiscoverServices(true);
     }
 

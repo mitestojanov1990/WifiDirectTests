@@ -160,8 +160,8 @@ public class WifiGroupManager extends AppCompatActivity implements
 
     public void SetBroadcastReceiver(IntentFilter intentFilter){
         if(wifiDirectManager != null){
-            //_receiver = new WiFiDirectBroadcastReceiver(wifiDirectManager.getWifiP2pManager(), wifiDirectManager.getChannel(), curActivity);
-            _receiver = new WiFiDirectBroadcastReceiver(wifiDirectManager.getWifiP2pManager(), wifiDirectManager.getChannel(), this);
+            _receiver = new WiFiDirectBroadcastReceiver(wifiDirectManager.getWifiP2pManager(), wifiDirectManager.getChannel(), curActivity);
+            //_receiver = new WiFiDirectBroadcastReceiver(wifiDirectManager.getWifiP2pManager(), wifiDirectManager.getChannel(), this);
             registerReceiver(_receiver, intentFilter);
         }
     }
@@ -363,8 +363,8 @@ public class WifiGroupManager extends AppCompatActivity implements
         intentFilter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
         intentFilter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
 
-        //wifiDirectManager = WifiDirectManager.getInstance(getApplicationContext(), curActivity, intentFilter);
-        wifiDirectManager = WifiDirectManager.getInstance(getApplicationContext(), this, intentFilter);
+        wifiDirectManager = WifiDirectManager.getInstance(getApplicationContext(), curActivity, intentFilter);
+        //wifiDirectManager = WifiDirectManager.getInstance(getApplicationContext(), this, intentFilter);
         updateItems(WifiDirectManager.FoundServices);
         appendStatus("Start Wifi Direct Manager");
 
@@ -912,8 +912,8 @@ public class WifiGroupManager extends AppCompatActivity implements
         try {
             tmpAdd = InetAddress.getByName(addr);
 
-           // handler = new ClientSocketHandler(getHandler(), tmpAdd, (WifiGroupManager)curActivity);
-            handler = new ClientSocketHandler(this.getHandler(), tmpAdd, this);
+            handler = new ClientSocketHandler(getHandler(), tmpAdd, (WifiGroupManager)curActivity);
+            //handler = new ClientSocketHandler(this.getHandler(), tmpAdd, this);
             handler.start();
 
             IsSocketConnected = true;
@@ -929,8 +929,8 @@ public class WifiGroupManager extends AppCompatActivity implements
     public void CreateServerSocket(){
         Thread handler = null;
         try {
-            //handler = new GroupOwnerSocketHandler(getHandler(), (WifiGroupManager)curActivity);
-            handler = new GroupOwnerSocketHandler(this.getHandler(), this);
+            handler = new GroupOwnerSocketHandler(getHandler(), (WifiGroupManager)curActivity);
+            //handler = new GroupOwnerSocketHandler(this.getHandler(), this);
             handler.start();
         } catch (IOException e) {
             e.printStackTrace();
@@ -1155,8 +1155,8 @@ public class WifiGroupManager extends AppCompatActivity implements
                 try {
                     Log.d(Constants.TAG_LOG, "Create GroupOwnerSocketHandler");
                     appendStatus("Create GroupOwnerSocketHandler");
-                    //handler = new GroupOwnerSocketHandler(getHandler(), (WifiGroupManager)curActivity);
-                    handler = new GroupOwnerSocketHandler(this.getHandler(), this);
+                    handler = new GroupOwnerSocketHandler(getHandler(), (WifiGroupManager)curActivity);
+                    //handler = new GroupOwnerSocketHandler(this.getHandler(), this);
                     handler.start();
                     appendStatus("Group Owner Address: " + p2pInfo.groupOwnerAddress);
                     wifiDirectManager.setServerIp(p2pInfo.groupOwnerAddress.getHostAddress());
@@ -1174,8 +1174,8 @@ public class WifiGroupManager extends AppCompatActivity implements
             _isServer = false;
             Log.d(Constants.TAG_LOG, "Connected as client (peer)");
             appendStatus("Connected as client (peer)");
-            //handler = new ClientSocketHandler(getHandler(), p2pInfo.groupOwnerAddress, (WifiGroupManager)curActivity);
-            handler = new ClientSocketHandler(this.getHandler(), p2pInfo.groupOwnerAddress, this);
+            handler = new ClientSocketHandler(getHandler(), p2pInfo.groupOwnerAddress, (WifiGroupManager)curActivity);
+            //handler = new ClientSocketHandler(this.getHandler(), p2pInfo.groupOwnerAddress, this);
             handler.start();
             Log.d(Constants.TAG_LOG, "ClientHandlerStart");
         }

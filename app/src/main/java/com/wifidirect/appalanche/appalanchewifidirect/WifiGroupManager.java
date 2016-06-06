@@ -393,6 +393,7 @@ public class WifiGroupManager extends AppCompatActivity implements
     private void CheckIfConnectionsAvailable(){
         if (WifiDirectManager.FoundServices.size() > 0) {
             //if(!IsConnected) {
+            if(!GroupCreated)
                 FindHighestPriorityConnection();
             //}
         } else {

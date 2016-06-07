@@ -88,7 +88,9 @@ public class ServiceTxtRecordAdapter extends RecyclerView.Adapter<ServiceTxtReco
                 if (userGroupDataSet.size() > 0) {
                     WifiServiceTxtRecord tmp = userGroupDataSet.get(listPosition);
                     //WifiGroupManager.onConnectToSocket(tmp.getServerIp());
-                    eventBus.post(new ServerIpEvent(tmp.getServerIp()));
+
+                    eventBus.postSticky(new ServerIpEvent(tmp.getServerIp()));
+                    //eventBus.post(new ServerIpEvent(tmp.getServerIp()));
                     //tmp.setIsConnected(true);
                     notifyDataSetChanged();
                 }

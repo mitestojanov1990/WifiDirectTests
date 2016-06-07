@@ -4,7 +4,6 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
-import android.os.Looper;
 import android.util.Log;
 
 import com.wifidirect.appalanche.appalanchewifidirect.Events.ServerIpEvent;
@@ -68,6 +67,7 @@ public class ClientSocketService extends Service {
         //  Toast.makeText(this,"Service created ...", Toast.LENGTH_LONG).show();
 
         looperThread = new LooperThread();
+        looperThread.start();
 
         ServerIpEvent stickyEvent = EventBus.getDefault().removeStickyEvent(ServerIpEvent.class);
         if(stickyEvent != null) {
@@ -102,7 +102,6 @@ public class ClientSocketService extends Service {
     class connectSocket implements Runnable {
         @Override
         public void run() {
-            Looper.prepare();
             //while(isAlive) {
             Socket socket = new Socket();
             try {

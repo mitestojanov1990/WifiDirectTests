@@ -929,7 +929,7 @@ public class WifiGroupManager extends AppCompatActivity implements
         Thread handler = null;
         InetAddress tmpAdd = null;
 
-        EventBus.getDefault().postSticky(new ServerIpEvent(addr));
+        //EventBus.getDefault().postSticky(new ServerIpEvent(addr));
 
         //handler = new ClientSocketHandler(this.getHandler(), tmpAdd, (WifiGroupManager)curActivity, eventBus);
 
@@ -1393,7 +1393,7 @@ public class WifiGroupManager extends AppCompatActivity implements
     }
 
     @Subscribe
-    public void onEvent(WifiMessageEvent event){
+    public void onEventMainThread(WifiMessageEvent event){
         appendStatus(event.getMessage());
     }
 

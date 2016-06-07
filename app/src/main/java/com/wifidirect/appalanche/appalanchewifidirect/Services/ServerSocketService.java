@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
-import android.os.Looper;
 import android.util.Log;
 
 import com.wifidirect.appalanche.appalanchewifidirect.Events.ConnectedClientEvent;
@@ -70,6 +69,7 @@ public class ServerSocketService extends Service {
         //  Toast.makeText(this,"Service created ...", Toast.LENGTH_LONG).show();
 
         looperThread = new LooperThread();
+        looperThread.start();
 
         InitializeSocket();
 
@@ -111,7 +111,6 @@ public class ServerSocketService extends Service {
     class connectSocket implements Runnable {
         @Override
         public void run() {
-            Looper.prepare();
             createServerSocket();
             while (true) {
                 try {

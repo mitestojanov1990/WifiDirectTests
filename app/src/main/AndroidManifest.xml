@@ -36,6 +36,10 @@
         </activity>
         <service android:name=".Services.BroadcastReceiverService" >
         </service>
+        <service android:name=".Services.ClientSocketService" >
+        </service>
+        <service android:name=".Services.ServerSocketService" >
+        </service>
         <receiver android:name=".WiFiDirectBroadcastReceiver">
             <intent-filter>
                 <action android:name="android.net.wifi.SCAN_RESULTS"/>

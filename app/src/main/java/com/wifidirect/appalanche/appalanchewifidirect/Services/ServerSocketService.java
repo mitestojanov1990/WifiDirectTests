@@ -5,12 +5,13 @@ import android.content.Intent;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.util.Log;
 
 import com.wifidirect.appalanche.appalanchewifidirect.Events.ConnectedClientEvent;
 import com.wifidirect.appalanche.appalanchewifidirect.Events.WifiMessageEvent;
-import com.wifidirect.appalanche.appalanchewifidirect.Handlers.IncomingHandler;
 import com.wifidirect.appalanche.appalanchewifidirect.Helpers.Constants;
+import com.wifidirect.appalanche.appalanchewifidirect.Helpers.LooperThread;
 import com.wifidirect.appalanche.appalanchewifidirect.MessageManager;
 
 import org.greenrobot.eventbus.EventBus;
@@ -30,6 +31,8 @@ public class ServerSocketService extends Service {
     private final int THREAD_COUNT = 10;
 
     Thread serverThread = null;
+    LooperThread looperThread = null;
+
 
     Handler serverHandler = null;
 
@@ -65,6 +68,8 @@ public class ServerSocketService extends Service {
         super.onStartCommand(intent, flags, startId);
         System.out.println("I am in on start");
         //  Toast.makeText(this,"Service created ...", Toast.LENGTH_LONG).show();
+
+        looperThread = new LooperThread();
 
         InitializeSocket();
 
@@ -106,6 +111,7 @@ public class ServerSocketService extends Service {
     class connectSocket implements Runnable {
         @Override
         public void run() {
+            Looper.prepare();
             createServerSocket();
             while (true) {
                 try {
@@ -113,8 +119,7 @@ public class ServerSocketService extends Service {
                     Log.d(Constants.TAG_LOG, "Before create MessageManager");
                     //if(!activity.IsServer) {
                     Socket tmp = socket.accept();
-                    serverHandler = new IncomingHandler();
-                    MessageManager mgr = new MessageManager(tmp, serverHandler);
+                    MessageManager mgr = new MessageManager(tmp, looperThread.getHandler());
                     EventBus.getDefault().post(new ConnectedClientEvent(mgr));
                     pool.execute(mgr);
                     //}

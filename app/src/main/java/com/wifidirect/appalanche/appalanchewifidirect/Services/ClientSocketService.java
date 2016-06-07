@@ -4,14 +4,15 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
+import android.os.Looper;
 import android.util.Log;
 
 import com.wifidirect.appalanche.appalanchewifidirect.Events.ServerIpEvent;
 import com.wifidirect.appalanche.appalanchewifidirect.Events.SocketProblemEvent;
 import com.wifidirect.appalanche.appalanchewifidirect.Events.SocketStatusEvent;
 import com.wifidirect.appalanche.appalanchewifidirect.Events.WifiMessageEvent;
-import com.wifidirect.appalanche.appalanchewifidirect.Handlers.IncomingHandler;
 import com.wifidirect.appalanche.appalanchewifidirect.Helpers.Constants;
+import com.wifidirect.appalanche.appalanchewifidirect.Helpers.LooperThread;
 import com.wifidirect.appalanche.appalanchewifidirect.MessageManager;
 
 import org.greenrobot.eventbus.EventBus;
@@ -29,6 +30,7 @@ public class ClientSocketService extends Service {
     private InetAddress _address;
 
     Thread t = null;
+    LooperThread looperThread = null;
 
     private boolean isAlive = true;
     private MessageManager _messageHandler;
@@ -65,6 +67,8 @@ public class ClientSocketService extends Service {
         System.out.println("I am in on start");
         //  Toast.makeText(this,"Service created ...", Toast.LENGTH_LONG).show();
 
+        looperThread = new LooperThread();
+
         ServerIpEvent stickyEvent = EventBus.getDefault().removeStickyEvent(ServerIpEvent.class);
         if(stickyEvent != null) {
             // Now do something with it
@@ -98,6 +102,7 @@ public class ClientSocketService extends Service {
     class connectSocket implements Runnable {
         @Override
         public void run() {
+            Looper.prepare();
             //while(isAlive) {
             Socket socket = new Socket();
             try {
@@ -106,7 +111,8 @@ public class ClientSocketService extends Service {
                 Log.d(Constants.TAG_LOG, "Launching the I/O handler. host: " + _address.getHostAddress().toString());
 
                 SendStatusMessage("Socket connected");
-                _messageHandler = new MessageManager(socket, new IncomingHandler());
+                _messageHandler = new MessageManager(socket, looperThread.getHandler());
+
                 t = new Thread(_messageHandler);
                 t.start();
                 CheckConnection();
@@ -145,6 +151,7 @@ public class ClientSocketService extends Service {
                     SendStatusMessage("Socket closing failed :" + e1.getMessage());
                 }
             }
+
         }
     }
 

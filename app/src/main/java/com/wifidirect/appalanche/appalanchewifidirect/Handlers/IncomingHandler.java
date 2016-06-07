@@ -9,6 +9,9 @@ import com.wifidirect.appalanche.appalanchewifidirect.Helpers.Constants;
 import com.wifidirect.appalanche.appalanchewifidirect.Models.AppMessage;
 
 public class IncomingHandler extends Handler {
+
+
+
     @Override
     public void handleMessage(Message msg) {
         switch (msg.what) {

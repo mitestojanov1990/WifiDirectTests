@@ -7,7 +7,6 @@ import com.wifidirect.appalanche.appalanchewifidirect.Events.SocketProblemEvent;
 import com.wifidirect.appalanche.appalanchewifidirect.Events.SocketStatusEvent;
 import com.wifidirect.appalanche.appalanchewifidirect.Events.WifiMessageEvent;
 import com.wifidirect.appalanche.appalanchewifidirect.MessageManager;
-import com.wifidirect.appalanche.appalanchewifidirect.WifiGroupManager;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -22,16 +21,14 @@ public class ClientSocketHandler extends Thread {
     private MessageManager _messageHandler;
     private InetAddress _address;
     private EventBus eventBus;
-    static private WifiGroupManager activity;
 
     Thread t = null;
 
     private boolean isAlive = true;
 
-    public ClientSocketHandler(Handler handler, InetAddress groupOwnerAddress, WifiGroupManager activity, EventBus eventBus) {
+    public ClientSocketHandler(Handler handler, InetAddress groupOwnerAddress, EventBus eventBus) {
         this.handler = handler;
         this._address = groupOwnerAddress;
-        this.activity = activity;
         this.eventBus = eventBus;
     }
 

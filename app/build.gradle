@@ -1,12 +1,12 @@
-//apply plugin: 'com.android.library'
-apply plugin: 'com.android.application'
+apply plugin: 'com.android.library'
+//apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 23
     buildToolsVersion "23.0.3"
 
     defaultConfig {
-        applicationId "com.wifidirect.appalanche.appalanchewifidirect"
+        //applicationId "com.wifidirect.appalanche.appalanchewifidirect"
         minSdkVersion 16
         targetSdkVersion 23
         versionCode 1

@@ -6,7 +6,6 @@ import android.util.Log;
 import com.wifidirect.appalanche.appalanchewifidirect.Events.ConnectedClientEvent;
 import com.wifidirect.appalanche.appalanchewifidirect.Events.WifiMessageEvent;
 import com.wifidirect.appalanche.appalanchewifidirect.MessageManager;
-import com.wifidirect.appalanche.appalanchewifidirect.WifiGroupManager;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -23,18 +22,16 @@ public class GroupOwnerSocketHandler extends Thread {
     static ServerSocket socket = null;
     private final int THREAD_COUNT = 10;
     private Handler handler;
-    private static WifiGroupManager activity;
     private EventBus eventBus;
 
     private SocketAddress myIP;
 
-    public GroupOwnerSocketHandler(Handler handler, WifiGroupManager activity, EventBus eventBus) throws IOException {
+    public GroupOwnerSocketHandler(Handler handler, EventBus eventBus) throws IOException {
 
         try {
             socket = new ServerSocket(Constants.SERVER_PORT);
             myIP = socket.getLocalSocketAddress();
             this.handler = handler;
-            this.activity = activity;
             this.eventBus = eventBus;
             Log.d(Constants.TAG_LOG, "Server Socket Started");
             SendStatusMessage("Server Socket Started");

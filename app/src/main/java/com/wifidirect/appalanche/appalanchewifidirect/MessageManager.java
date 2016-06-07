@@ -79,11 +79,6 @@ public class MessageManager implements Runnable {
     }
 
     public void write(byte[] buffer) {
-        if (WifiGroupManager.IsDisconnected) {
-            Log.d(Constants.TAG_LOG, "Client disconnected!!");
-            _threadIsAlive = false;
-            return;
-        }
         try {
             oStream.write(buffer);
         } catch (IOException e) {
@@ -91,5 +86,4 @@ public class MessageManager implements Runnable {
             Log.e(Constants.TAG_LOG, "Exception during write", e);
         }
     }
-
 }

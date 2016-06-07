@@ -68,7 +68,7 @@ public class WifiGroupManager extends AppCompatActivity implements
     public Tuple<String, Integer> myDevice = null;
 
     public static WifiDirectManager wifiDirectManager = null;
-    public static boolean IsDisconnected = false;
+    public boolean IsDisconnected = false;
     public static boolean IsServer = false;
 
     private final IntentFilter intentFilter = new IntentFilter();
@@ -223,6 +223,10 @@ public class WifiGroupManager extends AppCompatActivity implements
         statusTxtView.scrollTo(0,0);
     }
 
+
+    public void SetWifiStatus(boolean isDisconnected){
+        IsDisconnected = isDisconnected;
+    }
 
     public void DebugButtons(){
         statusTxtView = (TextView)findViewById(R.id.status_text);
@@ -806,7 +810,7 @@ public class WifiGroupManager extends AppCompatActivity implements
     }
 
 
-    private void resetData(boolean reset) {
+    public void resetData(boolean reset) {
         if(reset) {
             _IsInitiated = false;
             wifiDirectManager.ClearFoundServices();
@@ -914,7 +918,7 @@ public class WifiGroupManager extends AppCompatActivity implements
             tmpAdd = InetAddress.getByName(addr);
 
             //handler = new ClientSocketHandler(this.getHandler(), tmpAdd, (WifiGroupManager)curActivity, eventBus);
-            handler = new ClientSocketHandler(this.getHandler(), tmpAdd, this, eventBus);
+            handler = new ClientSocketHandler(this.getHandler(), tmpAdd, eventBus);
             handler.start();
 
             IsSocketConnected = true;
@@ -931,7 +935,7 @@ public class WifiGroupManager extends AppCompatActivity implements
         Thread handler = null;
         try {
             //handler = new GroupOwnerSocketHandler(this.getHandler(), (WifiGroupManager)curActivity, eventBus);
-            handler = new GroupOwnerSocketHandler(this.getHandler(), this, eventBus);
+            handler = new GroupOwnerSocketHandler(this.getHandler(), eventBus);
             handler.start();
         } catch (IOException e) {
             e.printStackTrace();
@@ -1151,39 +1155,43 @@ public class WifiGroupManager extends AppCompatActivity implements
         super.onStop();
     }
 
+    public void createGroupOwnerSocketHandler(Thread handler, WifiP2pInfo p2pInfo){
+        _isServer = true;
+        Log.d(Constants.TAG_LOG, "Connected as server (group owner) MAC");
+        appendStatus("Connected as server (group owner) MAC");
+        if (!_serverThreadCreated) {
+            try {
+                Log.d(Constants.TAG_LOG, "Create GroupOwnerSocketHandler");
+                appendStatus("Create GroupOwnerSocketHandler");
+                //handler = new GroupOwnerSocketHandler(this.getHandler(), (WifiGroupManager)curActivity, eventBus);
+                handler = new GroupOwnerSocketHandler(this.getHandler(), eventBus);
+                handler.start();
+                appendStatus("Group Owner Address: " + p2pInfo.groupOwnerAddress);
+                wifiDirectManager.setServerIp(p2pInfo.groupOwnerAddress.getHostAddress());
+                IsConnected = true;
+            } catch (IOException e) {
+                Log.d(Constants.TAG_LOG, "Failed to create a server thread - " + e.getMessage());
+                appendStatus("Failed to create a server thread - " + e.getMessage());
+                IsConnected = false;
+                return;
+            }
+            _serverThreadCreated = true;
+        }
+    }
+
     @Override
     public void onConnectionInfoAvailable(WifiP2pInfo p2pInfo) {
         Thread handler = null;
 
         if (p2pInfo.isGroupOwner) {
-            _isServer = true;
-            Log.d(Constants.TAG_LOG, "Connected as server (group owner) MAC");
-            appendStatus("Connected as server (group owner) MAC");
-            if (!_serverThreadCreated) {
-                try {
-                    Log.d(Constants.TAG_LOG, "Create GroupOwnerSocketHandler");
-                    appendStatus("Create GroupOwnerSocketHandler");
-                    //handler = new GroupOwnerSocketHandler(this.getHandler(), (WifiGroupManager)curActivity, eventBus);
-                    handler = new GroupOwnerSocketHandler(this.getHandler(), this, eventBus);
-                    handler.start();
-                    appendStatus("Group Owner Address: " + p2pInfo.groupOwnerAddress);
-                    wifiDirectManager.setServerIp(p2pInfo.groupOwnerAddress.getHostAddress());
-                    IsConnected = true;
-                } catch (IOException e) {
-                    Log.d(Constants.TAG_LOG, "Failed to create a server thread - " + e.getMessage());
-                    appendStatus("Failed to create a server thread - " + e.getMessage());
-                    IsConnected = false;
-                    return;
-                }
-                _serverThreadCreated = true;
-            }
+            createGroupOwnerSocketHandler(handler, p2pInfo);
         }
         else {
             _isServer = false;
             Log.d(Constants.TAG_LOG, "Connected as client (peer)");
             appendStatus("Connected as client (peer)");
             //handler = new ClientSocketHandler(this.getHandler(), p2pInfo.groupOwnerAddress, (WifiGroupManager)curActivity, eventBus);
-            handler = new ClientSocketHandler(this.getHandler(), p2pInfo.groupOwnerAddress, this, eventBus);
+            handler = new ClientSocketHandler(this.getHandler(), p2pInfo.groupOwnerAddress, eventBus);
             handler.start();
             Log.d(Constants.TAG_LOG, "ClientHandlerStart");
         }

@@ -151,7 +151,8 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
                 // It's a disconnect
                 Log.d(Constants.TAG_LOG, "It is a disconnect");
                 if (!WifiGroupManager.IsServer) {
-                    WifiGroupManager.IsDisconnected = true;
+                    //WifiGroupManager.IsDisconnected = true;
+                    eventBus.post(new WifiStatusEvent(true));
                     //((FragmentChangeListener) activity).OnChangeToSubview(Constants.ID_MAIN_PAGE);
                 }
             }

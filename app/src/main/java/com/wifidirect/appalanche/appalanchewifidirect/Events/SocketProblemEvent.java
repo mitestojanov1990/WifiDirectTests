@@ -8,7 +8,7 @@ public class SocketProblemEvent {
     public SocketProblemEvent(){
 
     }
-    public SocketProblemEvent(boolean message){
+    public SocketProblemEvent(boolean isConnected){
         this.isConnected = isConnected;
     }
 

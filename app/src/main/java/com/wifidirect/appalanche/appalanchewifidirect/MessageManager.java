@@ -53,17 +53,12 @@ public class MessageManager implements Runnable {
             _handler.obtainMessage(Constants.MY_HANDLE, this).sendToTarget();
 
             while (_threadIsAlive) {
-                //try {
-                    bytes = iStream.read(buffer);
-                    if (bytes == -1) {
-                        break;
-                    }
+                bytes = iStream.read(buffer);
+                if (bytes == -1) {
+                    break;
+                }
 
-                    _handler.obtainMessage(Constants.MESSAGE_READ, bytes, -1, buffer).sendToTarget();
-                //} catch (IOException e) {
-                    //Log.e(Constants.TAG_LOG, "disconnected/timeout", e);
-                    //_handler.obtainMessage(Constants.HANDLER_TIMEOUT, this).sendToTarget();
-                //}
+                _handler.obtainMessage(Constants.MESSAGE_READ, bytes, -1, buffer).sendToTarget();
             }
         } catch (IOException e) {
             Log.i("IOException", e.toString());

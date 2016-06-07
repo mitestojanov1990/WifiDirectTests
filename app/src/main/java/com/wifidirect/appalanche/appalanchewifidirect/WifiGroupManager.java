@@ -3,7 +3,11 @@ package com.wifidirect.appalanche.appalanchewifidirect;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WpsInfo;
 import android.net.wifi.p2p.WifiP2pConfig;
@@ -15,6 +19,7 @@ import android.net.wifi.p2p.WifiP2pManager;
 import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceRequest;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -27,11 +32,14 @@ import android.widget.TextView;
 
 import com.wifidirect.appalanche.appalanchewifidirect.Adapters.ServiceTxtRecordAdapter;
 import com.wifidirect.appalanche.appalanchewifidirect.Events.ConnectedClientEvent;
-import com.wifidirect.appalanche.appalanchewifidirect.Events.FoundServicesEvent;
+import com.wifidirect.appalanche.appalanchewifidirect.Events.ConnectionInfoEvent;
+import com.wifidirect.appalanche.appalanchewifidirect.Events.IsDisconnectedEvent;
 import com.wifidirect.appalanche.appalanchewifidirect.Events.MyDeviceNameEvent;
+import com.wifidirect.appalanche.appalanchewifidirect.Events.PeersEvent;
 import com.wifidirect.appalanche.appalanchewifidirect.Events.ServerIpEvent;
 import com.wifidirect.appalanche.appalanchewifidirect.Events.SocketProblemEvent;
 import com.wifidirect.appalanche.appalanchewifidirect.Events.SocketStatusEvent;
+import com.wifidirect.appalanche.appalanchewifidirect.Events.WifiInfoEvent;
 import com.wifidirect.appalanche.appalanchewifidirect.Events.WifiMessageEvent;
 import com.wifidirect.appalanche.appalanchewifidirect.Events.WifiServiceTxtRecordEvent;
 import com.wifidirect.appalanche.appalanchewifidirect.Events.WifiStatusEvent;
@@ -44,13 +52,14 @@ import com.wifidirect.appalanche.appalanchewifidirect.Interfaces.MessageTarget;
 import com.wifidirect.appalanche.appalanchewifidirect.Interfaces.WifiGroupManagerListener;
 import com.wifidirect.appalanche.appalanchewifidirect.Models.AppMessage;
 import com.wifidirect.appalanche.appalanchewifidirect.Models.WifiServiceTxtRecord;
+import com.wifidirect.appalanche.appalanchewifidirect.Services.ClientSocketService;
+import com.wifidirect.appalanche.appalanchewifidirect.Services.ServerSocketService;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -60,9 +69,7 @@ public class WifiGroupManager extends AppCompatActivity implements
         MessageTarget,
         MessageForwarder,
         WifiP2pManager.ChannelListener,
-        WifiP2pManager.ConnectionInfoListener,
-        FragmentChangeListener,
-        WifiP2pManager.PeerListListener {
+        FragmentChangeListener {
 
     public List<Tuple<String, Integer>> fixedUsers = new java.util.ArrayList<>();
     public Tuple<String, Integer> myDevice = null;
@@ -168,9 +175,9 @@ public class WifiGroupManager extends AppCompatActivity implements
 
     public void SetBroadcastReceiver(){
         if(wifiDirectManager != null){
-            _receiver = new WiFiDirectBroadcastReceiver(wifiDirectManager.getWifiP2pManager(), wifiDirectManager.getChannel(), curActivity, eventBus);
+            //_receiver = new WiFiDirectBroadcastReceiver(eventBus);
             //_receiver = new WiFiDirectBroadcastReceiver(wifiDirectManager.getWifiP2pManager(), wifiDirectManager.getChannel(), this);
-            curActivity.registerReceiver(_receiver, intentFilter);
+            //curActivity.registerReceiver(_receiver, intentFilter);
         }
     }
 
@@ -262,7 +269,7 @@ public class WifiGroupManager extends AppCompatActivity implements
         StartWifiManager.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                wifiDirectManager = WifiDirectManager.getInstance(getApplicationContext(), getParent(), intentFilter, eventBus);
+                wifiDirectManager = WifiDirectManager.getInstance(getApplicationContext(), intentFilter, eventBus);
                 updateItems(WifiDirectManager.FoundServices);
                 appendStatus("Start Wifi Direct Manager");
             }
@@ -366,6 +373,10 @@ public class WifiGroupManager extends AppCompatActivity implements
         SetRecyclerView();
     }
 
+    ClientSocketService mClientBoundService;
+    ServerSocketService mServerBoundService;
+    boolean mClientIsBound = false;
+    boolean mServerIsBound = false;
     public void Init(){
 
         PopulateTempUsers();
@@ -380,14 +391,17 @@ public class WifiGroupManager extends AppCompatActivity implements
         intentFilter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
         intentFilter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
 
-        wifiDirectManager = WifiDirectManager.getInstance(curActivity.getApplicationContext(), curActivity, intentFilter, eventBus);
+        wifiDirectManager = WifiDirectManager.getInstance(curActivity.getApplicationContext(), intentFilter, eventBus);
         //wifiDirectManager = WifiDirectManager.getInstance(getApplicationContext(), this, intentFilter);
         updateItems(WifiDirectManager.FoundServices);
         appendStatus("Start Wifi Direct Manager");
 
         //SetDnsSdListeners();
         //StartAutomaticSearch();
+
+        //bindService
     }
+
 
     private void DisconnectFromWifi(){
         wifiDirectManager.DisconnectFromWifi();
@@ -396,7 +410,7 @@ public class WifiGroupManager extends AppCompatActivity implements
         appendStatus("Disconnect from Wifi");
     }
 
-    private void StartAutomaticSearch(){
+    public void StartAutomaticSearch(){
         SetServiceRequest();
 
         checkForAvailableConnectionsHandler.postDelayed(checkForAvailableConnections, 10000);
@@ -460,8 +474,8 @@ public class WifiGroupManager extends AppCompatActivity implements
     }
 
     public void updateItems(ArrayList<WifiServiceTxtRecord> FoundServices){
-        if(eventBus != null)
-            eventBus.post(new FoundServicesEvent(FoundServices));
+        //if(eventBus != null)
+        //    eventBus.post(new FoundServicesEvent(FoundServices));
         mAdapter = new ServiceTxtRecordAdapter(FoundServices, eventBus);
         mRecyclerView.setAdapter(mAdapter);
     }
@@ -598,7 +612,7 @@ public class WifiGroupManager extends AppCompatActivity implements
         }
     }
 
-    private void SetDnsSdListeners() {
+    public void SetDnsSdListeners() {
         wifiDirectManager.SetDnsSdResponseListeners(
                 new WifiP2pManager.DnsSdServiceResponseListener() {
                     @Override
@@ -914,20 +928,86 @@ public class WifiGroupManager extends AppCompatActivity implements
     public void CreateClientSocket(String addr){
         Thread handler = null;
         InetAddress tmpAdd = null;
-        try {
-            tmpAdd = InetAddress.getByName(addr);
 
-            //handler = new ClientSocketHandler(this.getHandler(), tmpAdd, (WifiGroupManager)curActivity, eventBus);
-            handler = new ClientSocketHandler(this.getHandler(), tmpAdd, eventBus);
-            handler.start();
+        EventBus.getDefault().postSticky(new ServerIpEvent(addr));
 
-            IsSocketConnected = true;
+        //handler = new ClientSocketHandler(this.getHandler(), tmpAdd, (WifiGroupManager)curActivity, eventBus);
 
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-            appendStatus("error creating client socket ");
-            IsSocketConnected = false;
-            // TODO: retry to connect
+        startService(new Intent(this, ClientSocketService.class));
+
+        //handler = new ClientSocketHandler(this.getHandler(), tmpAdd, eventBus);
+        //handler.start();
+
+        IsSocketConnected = true;
+    }
+
+    private ServiceConnection mClientConnection = new ServiceConnection() {
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            mClientBoundService = ((ClientSocketService.LocalBinder)service).getService();
+
+        }
+        public void onServiceDisconnected(ComponentName className) {
+            mClientBoundService = null;
+        }
+    };
+
+    private void doClientBindService() {
+        bindService(new Intent(this, ClientSocketHandler.class), mClientConnection, Context.BIND_AUTO_CREATE);
+        mClientIsBound = true;
+        mClientBoundService.IsBoundable();
+    }
+
+
+    private void doClientUnbindService() {
+        if (mClientIsBound) {
+            // Detach our existing connection.
+            unbindService(mClientConnection);
+            mClientIsBound = false;
+        }
+    }
+
+
+    public void createGroupOwnerSocketHandler(WifiP2pInfo p2pInfo){
+        Thread handler = null;
+        _isServer = true;
+        Log.d(Constants.TAG_LOG, "Connected as server (group owner) MAC");
+        appendStatus("Connected as server (group owner) MAC");
+        if (!_serverThreadCreated) {
+            Log.d(Constants.TAG_LOG, "Create GroupOwnerSocketHandler");
+            appendStatus("Create GroupOwnerSocketHandler");
+
+            startService(new Intent(this, ServerSocketService.class));
+
+            appendStatus("Group Owner Address: " + p2pInfo.groupOwnerAddress);
+            wifiDirectManager.setServerIp(p2pInfo.groupOwnerAddress.getHostAddress());
+
+            IsConnected = true;
+            _serverThreadCreated = true;
+        }
+    }
+
+    private ServiceConnection mServerConnection = new ServiceConnection() {
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            mServerBoundService = ((ServerSocketService.LocalBinder)service).getService();
+
+        }
+        public void onServiceDisconnected(ComponentName className) {
+            mServerBoundService = null;
+        }
+    };
+
+    private void doServerBindService() {
+        bindService(new Intent(this, ServerSocketService.class), mServerConnection, Context.BIND_AUTO_CREATE);
+        mServerIsBound = true;
+        mServerBoundService.IsBoundable();
+    }
+
+
+    private void doServerUnbindService() {
+        if (mServerIsBound) {
+            // Detach our existing connection.
+            unbindService(mServerConnection);
+            mServerIsBound = false;
         }
     }
 
@@ -940,7 +1020,6 @@ public class WifiGroupManager extends AppCompatActivity implements
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 
 
@@ -1137,8 +1216,8 @@ public class WifiGroupManager extends AppCompatActivity implements
     @Override
     public void onPause() {
         super.onPause();
-        if(_receiver != null)
-            curActivity.unregisterReceiver(_receiver);
+        //if(_receiver != null)
+            //curActivity.unregisterReceiver(_receiver);
         EventBus.getDefault().unregister(this);
     }
     @Override
@@ -1155,50 +1234,30 @@ public class WifiGroupManager extends AppCompatActivity implements
         super.onStop();
     }
 
-    public void createGroupOwnerSocketHandler(Thread handler, WifiP2pInfo p2pInfo){
-        _isServer = true;
-        Log.d(Constants.TAG_LOG, "Connected as server (group owner) MAC");
-        appendStatus("Connected as server (group owner) MAC");
-        if (!_serverThreadCreated) {
-            try {
-                Log.d(Constants.TAG_LOG, "Create GroupOwnerSocketHandler");
-                appendStatus("Create GroupOwnerSocketHandler");
-                //handler = new GroupOwnerSocketHandler(this.getHandler(), (WifiGroupManager)curActivity, eventBus);
-                handler = new GroupOwnerSocketHandler(this.getHandler(), eventBus);
-                handler.start();
-                appendStatus("Group Owner Address: " + p2pInfo.groupOwnerAddress);
-                wifiDirectManager.setServerIp(p2pInfo.groupOwnerAddress.getHostAddress());
-                IsConnected = true;
-            } catch (IOException e) {
-                Log.d(Constants.TAG_LOG, "Failed to create a server thread - " + e.getMessage());
-                appendStatus("Failed to create a server thread - " + e.getMessage());
-                IsConnected = false;
-                return;
+    @Subscribe
+    public void onEvent(ConnectionInfoEvent event){
+        wifiDirectManager.RequestConnectionInfo(new WifiP2pManager.ConnectionInfoListener(){
+
+            @Override
+            public void onConnectionInfoAvailable(WifiP2pInfo p2pInfo) {
+                Thread handler = null;
+
+                if (p2pInfo.isGroupOwner) {
+                    createGroupOwnerSocketHandler(p2pInfo);
+                }
+                else {
+                    _isServer = false;
+                    Log.d(Constants.TAG_LOG, "Connected as client (peer)");
+                    appendStatus("Connected as client (peer)");
+                    //handler = new ClientSocketHandler(this.getHandler(), p2pInfo.groupOwnerAddress, (WifiGroupManager)curActivity, eventBus);
+                    handler = new ClientSocketHandler(getHandler(), p2pInfo.groupOwnerAddress, eventBus);
+                    handler.start();
+                    Log.d(Constants.TAG_LOG, "ClientHandlerStart");
+                }
+                IsServer = _isServer;
             }
-            _serverThreadCreated = true;
-        }
+        });
     }
-
-    @Override
-    public void onConnectionInfoAvailable(WifiP2pInfo p2pInfo) {
-        Thread handler = null;
-
-        if (p2pInfo.isGroupOwner) {
-            createGroupOwnerSocketHandler(handler, p2pInfo);
-        }
-        else {
-            _isServer = false;
-            Log.d(Constants.TAG_LOG, "Connected as client (peer)");
-            appendStatus("Connected as client (peer)");
-            //handler = new ClientSocketHandler(this.getHandler(), p2pInfo.groupOwnerAddress, (WifiGroupManager)curActivity, eventBus);
-            handler = new ClientSocketHandler(this.getHandler(), p2pInfo.groupOwnerAddress, eventBus);
-            handler.start();
-            Log.d(Constants.TAG_LOG, "ClientHandlerStart");
-        }
-        IsServer = _isServer;
-
-    }
-
     @Override
     public void onChannelDisconnected() {
         if (wifiDirectManager.getWifiP2pManager() != null && !retryChannel) {
@@ -1293,10 +1352,15 @@ public class WifiGroupManager extends AppCompatActivity implements
         return handler;
     }
 
-    @Override
-    public void onPeersAvailable(WifiP2pDeviceList peerList) {
+    @Subscribe
+    public void onEvent(PeersEvent event){
+        wifiDirectManager.RequestPeers(new WifiP2pManager.PeerListListener(){
 
-        appendStatus("Peers Available total: " + peerList.getDeviceList().size());
+            @Override
+            public void onPeersAvailable(WifiP2pDeviceList peerList) {
+                appendStatus("Peers Available total: " + peerList.getDeviceList().size());
+            }
+        });
     }
 
     @Subscribe
@@ -1361,5 +1425,15 @@ public class WifiGroupManager extends AppCompatActivity implements
                 }
             }
         }
+    }
+
+    @Subscribe
+    public void onEvent(IsDisconnectedEvent event){
+        IsDisconnected = event.getIsConnected();
+    }
+
+    @Subscribe
+    public void onEvent(WifiInfoEvent event){
+        wifiDirectManager.GetWifiInfo();
     }
 }

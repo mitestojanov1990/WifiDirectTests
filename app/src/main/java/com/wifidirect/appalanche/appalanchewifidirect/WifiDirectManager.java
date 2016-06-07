@@ -1,9 +1,9 @@
 package com.wifidirect.appalanche.appalanchewifidirect;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.IntentFilter;
 import android.net.wifi.WifiConfiguration;
+import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pManager;
@@ -12,10 +12,15 @@ import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceRequest;
 import android.util.Log;
 
 import com.wifidirect.appalanche.appalanchewifidirect.Events.WifiMessageEvent;
+import com.wifidirect.appalanche.appalanchewifidirect.Events.WifiStatusEvent;
 import com.wifidirect.appalanche.appalanchewifidirect.Models.WifiServiceTxtRecord;
 
 import org.greenrobot.eventbus.EventBus;
 
+import java.math.BigInteger;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,7 +28,6 @@ import java.util.Map;
 
 public class WifiDirectManager {
     private Context context;
-    private Activity activity;
     private EventBus eventBus;
 
     private final IntentFilter intentFilter = new IntentFilter();
@@ -42,10 +46,9 @@ public class WifiDirectManager {
     private String ServerIp;
     private String UserID;
 
-    public WifiDirectManager(Context context, Activity activity, IntentFilter intentFilter, EventBus eventBus){
+    public WifiDirectManager(Context context, IntentFilter intentFilter, EventBus eventBus){
 
         this.context = context;
-        this.activity = activity;
         intentFilter = intentFilter;
         this.eventBus = eventBus;
 
@@ -58,9 +61,9 @@ public class WifiDirectManager {
     }
 
     private static WifiDirectManager instance = null;
-    public static WifiDirectManager getInstance(Context context, Activity activity, IntentFilter intentFilter, EventBus eventBus) {
+    public static WifiDirectManager getInstance(Context context, IntentFilter intentFilter, EventBus eventBus) {
         if(instance == null) {
-            instance = new WifiDirectManager(context, activity, intentFilter, eventBus);
+            instance = new WifiDirectManager(context, intentFilter, eventBus);
         }
         return instance;
     }
@@ -137,7 +140,6 @@ public class WifiDirectManager {
         }
 //        int tmpSecurity = getSecurity(tmp);
 
-        //((WifiGroupManagerListener) activity).SendMessage("Net ID = " + netId);
         if(eventBus != null)
             eventBus.post(new WifiMessageEvent("Net ID = " + netId));
 
@@ -153,7 +155,6 @@ public class WifiDirectManager {
 
     public void DisconnectFromWifi(){
         wifi.disconnect();
-        //((WifiGroupManagerListener) activity).SendMessage("Disconnected");
         if(eventBus != null)
             eventBus.post(new WifiMessageEvent("Disconnected"));
     }
@@ -213,6 +214,40 @@ public class WifiDirectManager {
         manager.requestConnectionInfo(_channel, listener);
     }
 
+    public void GetWifiInfo(){
+        //((WifiGroupManagerListener) activity).SendMessage("Connected");
+        eventBus.post(new WifiMessageEvent("Connected"));
+
+        WifiInfo wifiInfo = wifi.getConnectionInfo();
+        int ipAddress = wifiInfo.getIpAddress();
+        // Convert little-endian to big-endianif needed
+        if (ByteOrder.nativeOrder().equals(ByteOrder.LITTLE_ENDIAN)) {
+            ipAddress = Integer.reverseBytes(ipAddress);
+        }
+        byte[] ipByteArray = BigInteger.valueOf(ipAddress).toByteArray();
+        String ipAddressString;
+        try {
+            ipAddressString = InetAddress.getByAddress(ipByteArray).getHostAddress();
+        } catch (UnknownHostException ex) {
+            //((WifiGroupManagerListener) activity).SendMessage("Unable to get host address.");
+            eventBus.post(new WifiMessageEvent("Unable to get host address."));
+            ipAddressString = null;
+        }
+        int tmpRssi = wifiInfo.getRssi();
+        int signalLevel = wifi.calculateSignalLevel(tmpRssi, 10);
+
+        //((WifiGroupManagerListener) activity).SendMessage("Ip Address: " + ipAddressString + " Signal Level: " + signalLevel);
+        eventBus.post(new WifiMessageEvent("Ip Address: " + ipAddressString + " Signal Level: " + signalLevel));
+
+        //((WifiGroupManagerListener) activity).SendMessage("Error, Net ID is -1");
+        eventBus.post(new WifiMessageEvent("Error, Net ID is -1"));
+
+        //((WifiGroupManagerListener) activity).GetWifiStatus(true);
+        eventBus.post(new WifiStatusEvent(true));
+    }
+
+
+
     public void AddFoundService(WifiServiceTxtRecord service, String devName){
         FoundServices.add(service);
         _foundServiceNames.add(devName);
@@ -262,5 +297,6 @@ public class WifiDirectManager {
     public String getPassPhrase(){return this.PassPhrase; }
     public String getUserID(){return this.UserID;};
     public void setUserID(String UserID){this.UserID = UserID;}
+
 
 }

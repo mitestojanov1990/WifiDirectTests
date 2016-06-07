@@ -8,7 +8,7 @@ public class WifiStatusEvent {
     public WifiStatusEvent(){
 
     }
-    public WifiStatusEvent(boolean message){
+    public WifiStatusEvent(boolean isConnected){
         this.isConnected = isConnected;
     }
 

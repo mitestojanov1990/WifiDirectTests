@@ -111,11 +111,5 @@ public class ClientSocketHandler extends Thread {
 
     private void SendStatusMessage(final String msg){
         eventBus.post(new WifiMessageEvent(msg));
-//        activity.runOnUiThread(new Runnable() {
-//            @Override
-//            public void run() {
-//                activity.appendStatus(msg);
-//            }
-//        });
     }
 }

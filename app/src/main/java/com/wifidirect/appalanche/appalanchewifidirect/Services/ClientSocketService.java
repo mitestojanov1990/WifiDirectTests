@@ -6,6 +6,7 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
 
+import com.wifidirect.appalanche.appalanchewifidirect.Events.ClientMessageEvent;
 import com.wifidirect.appalanche.appalanchewifidirect.Events.ServerIpEvent;
 import com.wifidirect.appalanche.appalanchewifidirect.Events.SocketProblemEvent;
 import com.wifidirect.appalanche.appalanchewifidirect.Events.SocketStatusEvent;
@@ -15,6 +16,7 @@ import com.wifidirect.appalanche.appalanchewifidirect.Helpers.LooperThread;
 import com.wifidirect.appalanche.appalanchewifidirect.MessageManager;
 
 import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -171,4 +173,10 @@ public class ClientSocketService extends Service {
         socket = null;
     }
 
+
+    @Subscribe
+    public void onEventBackgroundThread(ClientMessageEvent event){
+        String msg = event.getMessage().ToJSONString();
+        _messageHandler.write(msg.getBytes());
+    }
 }

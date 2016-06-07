@@ -13,11 +13,17 @@ import android.util.Log;
 import com.wifidirect.appalanche.appalanchewifidirect.WiFiDirectBroadcastReceiver;
 
 import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
 
 public class BroadcastReceiverService extends Service {
         BroadcastReceiver mReceiver;
 
     Thread bgThread;
+
+    @Subscribe
+    public void onEvent(boolean event){
+
+    }
 
     @Override
     public void onCreate() {

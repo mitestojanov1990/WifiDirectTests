@@ -5,9 +5,9 @@ import android.content.Intent;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
-import android.os.Looper;
 import android.util.Log;
 
+import com.wifidirect.appalanche.appalanchewifidirect.Events.BroadcastMessageEvent;
 import com.wifidirect.appalanche.appalanchewifidirect.Events.ConnectedClientEvent;
 import com.wifidirect.appalanche.appalanchewifidirect.Events.WifiMessageEvent;
 import com.wifidirect.appalanche.appalanchewifidirect.Helpers.Constants;
@@ -15,11 +15,13 @@ import com.wifidirect.appalanche.appalanchewifidirect.Helpers.LooperThread;
 import com.wifidirect.appalanche.appalanchewifidirect.MessageManager;
 
 import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -35,6 +37,8 @@ public class ServerSocketService extends Service {
 
 
     Handler serverHandler = null;
+
+    public static ArrayList<MessageManager> ConnectedClientManagers = new ArrayList<MessageManager>(); // holds all message managers (connected clients)
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -70,6 +74,7 @@ public class ServerSocketService extends Service {
         //  Toast.makeText(this,"Service created ...", Toast.LENGTH_LONG).show();
 
         looperThread = new LooperThread();
+        looperThread.start();
 
         InitializeSocket();
 
@@ -111,7 +116,6 @@ public class ServerSocketService extends Service {
     class connectSocket implements Runnable {
         @Override
         public void run() {
-            Looper.prepare();
             createServerSocket();
             while (true) {
                 try {
@@ -121,7 +125,10 @@ public class ServerSocketService extends Service {
                     Socket tmp = socket.accept();
                     MessageManager mgr = new MessageManager(tmp, looperThread.getHandler());
                     EventBus.getDefault().post(new ConnectedClientEvent(mgr));
+                    ConnectedClientManagers.add(mgr);
                     pool.execute(mgr);
+
+                    //looperThread.getHandler().sen
                     //}
                     Log.d(Constants.TAG_LOG, "Launching the I/O handler (server)");
                     SendStatusMessage("Launching the I/O handler (server)");
@@ -161,6 +168,14 @@ public class ServerSocketService extends Service {
             e.printStackTrace();
         }
         socket = null;
+    }
+
+    @Subscribe
+    public void onEventBackgroundThread(BroadcastMessageEvent event){
+        for (MessageManager mgr : ConnectedClientManagers) {
+            String msg = event.getMessage().ToJSONString();
+            mgr.write(msg.getBytes());
+        }
     }
 
 }

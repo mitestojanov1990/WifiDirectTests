@@ -31,6 +31,8 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.wifidirect.appalanche.appalanchewifidirect.Adapters.ServiceTxtRecordAdapter;
+import com.wifidirect.appalanche.appalanchewifidirect.Events.BroadcastMessageEvent;
+import com.wifidirect.appalanche.appalanchewifidirect.Events.ClientMessageEvent;
 import com.wifidirect.appalanche.appalanchewifidirect.Events.ConnectedClientEvent;
 import com.wifidirect.appalanche.appalanchewifidirect.Events.ConnectionInfoEvent;
 import com.wifidirect.appalanche.appalanchewifidirect.Events.IsDisconnectedEvent;
@@ -903,13 +905,15 @@ public class WifiGroupManager extends AppCompatActivity implements
         msg.msgTxt = msgText;
         String dataLine = msg.ToJSONString();
 
-        if (WifiGroupManager.IsServer) {
-            WifiGroupManager.DataList.add(dataLine);
-            if (messageManager != null) {
-                ((MessageForwarder)curActivity).ForwardMessage(dataLine);
-            }
-        }
-    };
+        EventBus.getDefault().post(new BroadcastMessageEvent(msg));
+
+//        if (WifiGroupManager.IsServer) {
+//            WifiGroupManager.DataList.add(dataLine);
+//            if (messageManager != null) {
+//                ((MessageForwarder)curActivity).ForwardMessage(dataLine);
+//            }
+//        }
+    }
 
     public void HandleMessageToServer(String msgText){
         AppMessage msg = new AppMessage();
@@ -917,11 +921,13 @@ public class WifiGroupManager extends AppCompatActivity implements
         msg.msgTxt = msgText;
         String dataLine = msg.ToJSONString();
 
-        if (!WifiGroupManager.IsServer) {
-            if (messageManager != null) {
-                messageManager.write(dataLine.getBytes());
-            }
-        }
+        EventBus.getDefault().post(new ClientMessageEvent(msg));
+
+//        if (!WifiGroupManager.IsServer) {
+//            if (messageManager != null) {
+//                messageManager.write(dataLine.getBytes());
+//            }
+//        }
     }
 
 
@@ -1393,7 +1399,7 @@ public class WifiGroupManager extends AppCompatActivity implements
     }
 
     @Subscribe
-    public void onEvent(WifiMessageEvent event){
+    public void onEventMainThread(WifiMessageEvent event){
         appendStatus(event.getMessage());
     }
 

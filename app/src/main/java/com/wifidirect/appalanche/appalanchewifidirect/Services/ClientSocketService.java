@@ -4,9 +4,9 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
-import android.os.Looper;
 import android.util.Log;
 
+import com.wifidirect.appalanche.appalanchewifidirect.Events.ClientMessageEvent;
 import com.wifidirect.appalanche.appalanchewifidirect.Events.ServerIpEvent;
 import com.wifidirect.appalanche.appalanchewifidirect.Events.SocketProblemEvent;
 import com.wifidirect.appalanche.appalanchewifidirect.Events.SocketStatusEvent;
@@ -16,6 +16,7 @@ import com.wifidirect.appalanche.appalanchewifidirect.Helpers.LooperThread;
 import com.wifidirect.appalanche.appalanchewifidirect.MessageManager;
 
 import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -68,6 +69,7 @@ public class ClientSocketService extends Service {
         //  Toast.makeText(this,"Service created ...", Toast.LENGTH_LONG).show();
 
         looperThread = new LooperThread();
+        looperThread.start();
 
         ServerIpEvent stickyEvent = EventBus.getDefault().removeStickyEvent(ServerIpEvent.class);
         if(stickyEvent != null) {
@@ -102,7 +104,6 @@ public class ClientSocketService extends Service {
     class connectSocket implements Runnable {
         @Override
         public void run() {
-            Looper.prepare();
             //while(isAlive) {
             Socket socket = new Socket();
             try {
@@ -172,4 +173,10 @@ public class ClientSocketService extends Service {
         socket = null;
     }
 
+
+    @Subscribe
+    public void onEventBackgroundThread(ClientMessageEvent event){
+        String msg = event.getMessage().ToJSONString();
+        _messageHandler.write(msg.getBytes());
+    }
 }

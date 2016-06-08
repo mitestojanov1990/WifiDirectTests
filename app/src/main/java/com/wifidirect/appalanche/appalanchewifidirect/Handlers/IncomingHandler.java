@@ -5,8 +5,11 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
+import com.wifidirect.appalanche.appalanchewifidirect.Events.WifiMessageEvent;
 import com.wifidirect.appalanche.appalanchewifidirect.Helpers.Constants;
 import com.wifidirect.appalanche.appalanchewifidirect.Models.AppMessage;
+
+import org.greenrobot.eventbus.EventBus;
 
 public class IncomingHandler extends Handler {
 
@@ -21,10 +24,10 @@ public class IncomingHandler extends Handler {
                 AppMessage tmp = new AppMessage();
                 tmp.PopulateFromJSON(readMessage);
 
-//                    if(tmp.msgTxt == null)
-//                        appendStatus("Message received: " + readMessage);
-//                    else
-//                        appendStatus("Message received: " + tmp.msgTxt);
+                if(tmp.msgTxt == null)
+                    EventBus.getDefault().post(new WifiMessageEvent(readMessage));
+                else
+                    EventBus.getDefault().post(new WifiMessageEvent(tmp.msgTxt));
 
                 break;
 

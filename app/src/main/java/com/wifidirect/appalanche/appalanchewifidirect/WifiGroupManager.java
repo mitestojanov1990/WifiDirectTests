@@ -30,6 +30,7 @@ import android.widget.TextView;
 import com.wifidirect.appalanche.appalanchewifidirect.Events.BroadcastMessageEvent;
 import com.wifidirect.appalanche.appalanchewifidirect.Events.ClientMessageEvent;
 import com.wifidirect.appalanche.appalanchewifidirect.Events.ConnectedClientEvent;
+import com.wifidirect.appalanche.appalanchewifidirect.Events.ConnectionInfoAvailable;
 import com.wifidirect.appalanche.appalanchewifidirect.Events.ConnectionInfoEvent;
 import com.wifidirect.appalanche.appalanchewifidirect.Events.FoundServicesEvent;
 import com.wifidirect.appalanche.appalanchewifidirect.Events.IsDisconnectedEvent;
@@ -1126,6 +1127,7 @@ public class WifiGroupManager extends AppCompatActivity implements
             @Override
             public void onConnectionInfoAvailable(WifiP2pInfo info) {
                 if(info != null){
+                    eventBus.post(new ConnectionInfoAvailable(info));
                     appendStatus("Connection info: " + info.toString());
                 }else{
                     appendStatus("Connection info problem");

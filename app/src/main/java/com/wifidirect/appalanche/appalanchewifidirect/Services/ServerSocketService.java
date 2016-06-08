@@ -19,8 +19,10 @@ import org.greenrobot.eventbus.Subscribe;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.ConnectException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -123,17 +125,25 @@ public class ServerSocketService extends Service {
                     // A blocking operation. Initiate a MessageManager instance when there is a new connection
                     Log.d(Constants.TAG_LOG, "Before create MessageManager");
                     //if(!activity.IsServer) {
-                    Socket tmp = socket.accept();
-                    MessageManager mgr = new MessageManager(tmp, looperThread.getHandler());
-                    EventBus.getDefault().post(new ConnectedClientEvent(mgr));
-                    ConnectedClientManagers.add(mgr);
-                    pool.execute(mgr);
+                    if(!socket.isClosed()) {
+                        Socket tmp = socket.accept();
+                        MessageManager mgr = new MessageManager(tmp, looperThread.getHandler());
+                        EventBus.getDefault().post(new ConnectedClientEvent(mgr));
+                        ConnectedClientManagers.add(mgr);
+                        pool.execute(mgr);
 
-                    //looperThread.getHandler().sen
-                    //}
-                    Log.d(Constants.TAG_LOG, "Launching the I/O handler (server)");
-                    SendStatusMessage("Launching the I/O handler (server)");
-                } catch (IOException e) {
+                        //looperThread.getHandler().sen
+                        //}
+                        Log.d(Constants.TAG_LOG, "Launching the I/O handler (server)");
+                        SendStatusMessage("Launching the I/O handler (server)");
+                    }
+                }catch(ConnectException exc){
+                    SendStatusMessage("MessageManager socket error :" + exc.toString());
+                }
+                catch(SocketException ex){
+                    SendStatusMessage("MessageManager socket error :" + ex.toString());
+                }
+                catch (IOException e) {
 
                     Log.i("GOS IOException", e.toString());
                     SendStatusMessage("MessageManager socket error :" + e.toString());

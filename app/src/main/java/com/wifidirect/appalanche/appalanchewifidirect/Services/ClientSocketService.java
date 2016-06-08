@@ -20,9 +20,11 @@ import org.greenrobot.eventbus.Subscribe;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 
 public class ClientSocketService extends Service {
@@ -121,6 +123,10 @@ public class ClientSocketService extends Service {
                 t.interrupt();
                 t.join();
 
+            } catch(ConnectException exc){
+                SendStatusMessage("Socket failed :" + exc.toString());
+            } catch(SocketException ex){
+                SendStatusMessage("Socket failed :" + ex.toString());
             } catch (IOException e) {
                 e.printStackTrace();
                 Log.i("CSH run", e.getMessage());

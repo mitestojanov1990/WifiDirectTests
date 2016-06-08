@@ -59,6 +59,7 @@ public class ServerSocketService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        EventBus.getDefault().register(this);
         System.out.println("I am in on create");
     }
 
@@ -158,6 +159,7 @@ public class ServerSocketService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        EventBus.getDefault().unregister(this);
         //TODO: see how to stop handler
         //serverHandler.remove
         serverThread.interrupt();

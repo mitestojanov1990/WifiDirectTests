@@ -62,7 +62,6 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -934,19 +933,10 @@ public class WifiGroupManager extends AppCompatActivity implements
 
     public void CreateClientSocket(String addr){
         if(!IsSocketConnected) {
-            Thread handler = null;
-            InetAddress tmpAdd = null;
-
+            IsSocketConnected = true;
             EventBus.getDefault().postSticky(new ServerIpEvent(addr));
 
-            //handler = new ClientSocketHandler(this.getHandler(), tmpAdd, (WifiGroupManager)curActivity, eventBus);
-
             startService(new Intent(this, ClientSocketService.class));
-
-            //handler = new ClientSocketHandler(this.getHandler(), tmpAdd, eventBus);
-            //handler.start();
-
-            IsSocketConnected = true;
         }
     }
 

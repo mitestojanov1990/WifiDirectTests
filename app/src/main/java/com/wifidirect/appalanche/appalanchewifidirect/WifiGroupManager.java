@@ -1,6 +1,5 @@
 package com.wifidirect.appalanche.appalanchewifidirect;
 
-import android.app.Activity;
 import android.app.Fragment;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -22,19 +21,17 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.DefaultItemAnimator;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.wifidirect.appalanche.appalanchewifidirect.Adapters.ServiceTxtRecordAdapter;
 import com.wifidirect.appalanche.appalanchewifidirect.Events.BroadcastMessageEvent;
 import com.wifidirect.appalanche.appalanchewifidirect.Events.ClientMessageEvent;
 import com.wifidirect.appalanche.appalanchewifidirect.Events.ConnectedClientEvent;
 import com.wifidirect.appalanche.appalanchewifidirect.Events.ConnectionInfoEvent;
+import com.wifidirect.appalanche.appalanchewifidirect.Events.FoundServicesEvent;
 import com.wifidirect.appalanche.appalanchewifidirect.Events.IsDisconnectedEvent;
 import com.wifidirect.appalanche.appalanchewifidirect.Events.MyDeviceNameEvent;
 import com.wifidirect.appalanche.appalanchewifidirect.Events.PeersEvent;
@@ -51,7 +48,6 @@ import com.wifidirect.appalanche.appalanchewifidirect.Helpers.GroupOwnerSocketHa
 import com.wifidirect.appalanche.appalanchewifidirect.Interfaces.FragmentChangeListener;
 import com.wifidirect.appalanche.appalanchewifidirect.Interfaces.MessageForwarder;
 import com.wifidirect.appalanche.appalanchewifidirect.Interfaces.MessageTarget;
-import com.wifidirect.appalanche.appalanchewifidirect.Interfaces.WifiGroupManagerListener;
 import com.wifidirect.appalanche.appalanchewifidirect.Models.AppMessage;
 import com.wifidirect.appalanche.appalanchewifidirect.Models.WifiServiceTxtRecord;
 import com.wifidirect.appalanche.appalanchewifidirect.Services.ClientSocketService;
@@ -138,7 +134,8 @@ public class WifiGroupManager extends AppCompatActivity implements
 
 
     public static EventBus eventBus;
-    public static Activity curActivity;
+    //public static Activity curActivity;
+    public static Context mainContext;
 
     public static WifiGroupManager instance = null;
 
@@ -153,17 +150,15 @@ public class WifiGroupManager extends AppCompatActivity implements
         reDisocverHandler = rdHandler;
     }
 
-    public WifiGroupManager(Activity activity, Handler h, Handler rgiHandler, Handler cfacHandler, Handler rdHandler){
-        curActivity = activity;
-
+    public WifiGroupManager(Context c, Handler h, Handler rgiHandler, Handler cfacHandler, Handler rdHandler){
+        mainContext = c;
         SetHandlers(h, rgiHandler, cfacHandler, rdHandler);
-
     }
 
 
-    public WifiGroupManager getInstance(Activity activity, Handler h, Handler rgiHandler, Handler cfacHandler, Handler rdHandler){
+    public WifiGroupManager getInstance(Context c, Handler h, Handler rgiHandler, Handler cfacHandler, Handler rdHandler){
         if(instance == null){
-            instance = new WifiGroupManager(activity, h, rgiHandler, cfacHandler, rdHandler);
+            instance = new WifiGroupManager(c, h, rgiHandler, cfacHandler, rdHandler);
         }
         return instance;
     }
@@ -204,7 +199,7 @@ public class WifiGroupManager extends AppCompatActivity implements
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.fragment_devices_list);
-        curActivity = this;
+        //curActivity = this;
         SetHandlers(handler, requestGroupInfoHandler, checkForAvailableConnectionsHandler, reDisocverHandler);
         Init();
     }
@@ -373,7 +368,7 @@ public class WifiGroupManager extends AppCompatActivity implements
             }
         });
 
-        SetRecyclerView();
+        //SetRecyclerView();
     }
 
     ClientSocketService mClientBoundService;
@@ -383,7 +378,7 @@ public class WifiGroupManager extends AppCompatActivity implements
     public void Init(){
 
         PopulateTempUsers();
-        DebugButtons();
+        //DebugButtons();
 
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
@@ -394,7 +389,7 @@ public class WifiGroupManager extends AppCompatActivity implements
         intentFilter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
         intentFilter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
 
-        wifiDirectManager = WifiDirectManager.getInstance(curActivity.getApplicationContext(), intentFilter, eventBus);
+        wifiDirectManager = WifiDirectManager.getInstance(mainContext, intentFilter, eventBus);
         //wifiDirectManager = WifiDirectManager.getInstance(getApplicationContext(), this, intentFilter);
         updateItems(WifiDirectManager.FoundServices);
         appendStatus("Start Wifi Direct Manager");
@@ -466,28 +461,28 @@ public class WifiGroupManager extends AppCompatActivity implements
             ConnectToWifi(curRecord.getSSID(), curRecord.getPassPhrase());
         }
     }
-
-    private void SetRecyclerView(){
-        mRecyclerView = (RecyclerView) findViewById(R.id.recordsView);
-        mRecyclerView.setHasFixedSize(true);
-
-        mLayoutManager = new LinearLayoutManager(curActivity);
-        mRecyclerView.setLayoutManager(mLayoutManager);
-        mRecyclerView.setItemAnimator(new DefaultItemAnimator(  ));
-    }
+//
+//    private void SetRecyclerView(){
+//        mRecyclerView = (RecyclerView) findViewById(R.id.recordsView);
+//        mRecyclerView.setHasFixedSize(true);
+//
+//        mLayoutManager = new LinearLayoutManager(curActivity);
+//        mRecyclerView.setLayoutManager(mLayoutManager);
+//        mRecyclerView.setItemAnimator(new DefaultItemAnimator(  ));
+//    }
 
     public void updateItems(ArrayList<WifiServiceTxtRecord> FoundServices){
-        //if(eventBus != null)
-        //    eventBus.post(new FoundServicesEvent(FoundServices));
-        mAdapter = new ServiceTxtRecordAdapter(FoundServices, eventBus);
-        mRecyclerView.setAdapter(mAdapter);
+        if(eventBus != null)
+            eventBus.post(new FoundServicesEvent(FoundServices));
+        //mAdapter = new ServiceTxtRecordAdapter(FoundServices, eventBus);
+        //mRecyclerView.setAdapter(mAdapter);
     }
-    public static void onConnectToSocket(String ServerIp){
-        ((WifiGroupManagerListener)curActivity).SetServerIpAddress(ServerIp);
-    }
-    public static void WifiTxtRecordOnClick(WifiServiceTxtRecord record){
-        ((WifiGroupManagerListener)curActivity).onClickConnectWifi(record);
-    }
+//    public static void onConnectToSocket(String ServerIp){
+//        ((WifiGroupManagerListener)curActivity).SetServerIpAddress(ServerIp);
+//    }
+//    public static void WifiTxtRecordOnClick(WifiServiceTxtRecord record){
+//        ((WifiGroupManagerListener)curActivity).onClickConnectWifi(record);
+//    }
 
     private void StopLocalService(){
         wifiDirectManager.ClearLocalServices(new WifiP2pManager.ActionListener() {
@@ -837,11 +832,11 @@ public class WifiGroupManager extends AppCompatActivity implements
     }
 
     public void appendStatus(String status) {
-        //if(eventBus != null)
-        //   eventBus.post(new WifiMessageEvent(status));
-        String current = statusTxtView.getText().toString();
-        statusTxtView.setText(current + "\n" + status);
-        Log.d(Constants.TAG_LOG, status);
+        if(eventBus != null)
+           eventBus.post(new WifiMessageEvent(status));
+        //String current = statusTxtView.getText().toString();
+        //statusTxtView.setText(current + "\n" + status);
+        //Log.d(Constants.TAG_LOG, status);
     }
 
     public String getErrorStatusByCode(int code){
@@ -1327,11 +1322,6 @@ public class WifiGroupManager extends AppCompatActivity implements
         }
         if (viewId == Constants.ID_MAIN_PAGE) {
             if (_IsInitiated) {
-                //messageFragmentSet = false;
-                //Fragment frag = getFragmentManager().findFragmentByTag("messages");
-                //if (frag != null) {
-                //    getFragmentManager().beginTransaction().remove(frag).commit();
-                //}
                 resetData(false);
                 Log.d(Constants.TAG_LOG, "Kill service");
                 Disconnect(new WifiP2pManager.ActionListener() {

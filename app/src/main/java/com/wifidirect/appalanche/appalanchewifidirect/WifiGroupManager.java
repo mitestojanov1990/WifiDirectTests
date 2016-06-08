@@ -59,6 +59,7 @@ import com.wifidirect.appalanche.appalanchewifidirect.Services.ServerSocketServi
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -398,10 +399,8 @@ public class WifiGroupManager extends AppCompatActivity implements
         updateItems(WifiDirectManager.FoundServices);
         appendStatus("Start Wifi Direct Manager");
 
-        //SetDnsSdListeners();
-        //StartAutomaticSearch();
-
-        //bindService
+        SetDnsSdListeners();
+        StartAutomaticSearch();
     }
 
 
@@ -1398,11 +1397,10 @@ public class WifiGroupManager extends AppCompatActivity implements
         IsConnected = event.getIsConnected();
     }
 
-    @Subscribe
-    public void onEventMainThread(WifiMessageEvent event){
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onEvent(WifiMessageEvent event){
         appendStatus(event.getMessage());
     }
-
 
     @Subscribe
     public void onEvent(ConnectedClientEvent event){

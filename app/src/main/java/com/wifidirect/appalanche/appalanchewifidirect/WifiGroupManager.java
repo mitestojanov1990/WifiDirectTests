@@ -1401,9 +1401,6 @@ public class WifiGroupManager extends AppCompatActivity implements
         IsConnected = event.getIsConnected();
     }
 
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onEvent(WifiMessageEvent event){
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onEvent(WifiMessageEvent event){
         appendStatus(event.getMessage());

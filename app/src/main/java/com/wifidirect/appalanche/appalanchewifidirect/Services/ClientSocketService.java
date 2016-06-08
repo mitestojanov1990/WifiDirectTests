@@ -158,6 +158,7 @@ public class ClientSocketService extends Service {
     }
 
     private void SendStatusMessage(String msg){
+
         EventBus.getDefault().post(new WifiMessageEvent(msg));
     }
 

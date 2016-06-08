@@ -59,6 +59,7 @@ import com.wifidirect.appalanche.appalanchewifidirect.Services.ServerSocketServi
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -173,14 +174,6 @@ public class WifiGroupManager extends AppCompatActivity implements
 
     public EventBus getEventBus(){
         return eventBus;
-    }
-
-    public void SetBroadcastReceiver(){
-        if(wifiDirectManager != null){
-            //_receiver = new WiFiDirectBroadcastReceiver(eventBus);
-            //_receiver = new WiFiDirectBroadcastReceiver(wifiDirectManager.getWifiP2pManager(), wifiDirectManager.getChannel(), this);
-            //curActivity.registerReceiver(_receiver, intentFilter);
-        }
     }
 
     public BroadcastReceiver getBroadcastReceiver(){
@@ -398,8 +391,8 @@ public class WifiGroupManager extends AppCompatActivity implements
         updateItems(WifiDirectManager.FoundServices);
         appendStatus("Start Wifi Direct Manager");
 
-        //SetDnsSdListeners();
-        //StartAutomaticSearch();
+        SetDnsSdListeners();
+        StartAutomaticSearch();
 
         //bindService
     }
@@ -932,19 +925,21 @@ public class WifiGroupManager extends AppCompatActivity implements
 
 
     public void CreateClientSocket(String addr){
-        Thread handler = null;
-        InetAddress tmpAdd = null;
+        if(!IsSocketConnected) {
+            Thread handler = null;
+            InetAddress tmpAdd = null;
 
-        //EventBus.getDefault().postSticky(new ServerIpEvent(addr));
+            EventBus.getDefault().postSticky(new ServerIpEvent(addr));
 
-        //handler = new ClientSocketHandler(this.getHandler(), tmpAdd, (WifiGroupManager)curActivity, eventBus);
+            //handler = new ClientSocketHandler(this.getHandler(), tmpAdd, (WifiGroupManager)curActivity, eventBus);
 
-        startService(new Intent(this, ClientSocketService.class));
+            startService(new Intent(this, ClientSocketService.class));
 
-        //handler = new ClientSocketHandler(this.getHandler(), tmpAdd, eventBus);
-        //handler.start();
+            //handler = new ClientSocketHandler(this.getHandler(), tmpAdd, eventBus);
+            //handler.start();
 
-        IsSocketConnected = true;
+            IsSocketConnected = true;
+        }
     }
 
     private ServiceConnection mClientConnection = new ServiceConnection() {
@@ -1201,7 +1196,6 @@ public class WifiGroupManager extends AppCompatActivity implements
             if(wifiDirectManager != null)
                 wifiDirectManager.setEventBus(eventBus);
         }
-        SetBroadcastReceiver();
     }
 
     @Override
@@ -1372,12 +1366,13 @@ public class WifiGroupManager extends AppCompatActivity implements
     @Subscribe
     public void onEvent(WifiStatusEvent event){
         IsConnected = event.getIsConnected();
-        if(IsConnected){
+        if(!IsConnected){
             appendStatus("Wifi not connected... do something");
         }else {
             if (curRecord != null) {
                 CreateClientSocket(curRecord.getServerIp());
-            }
+            }else
+                IsConnected = false;
         }
     }
 
@@ -1398,10 +1393,12 @@ public class WifiGroupManager extends AppCompatActivity implements
         IsConnected = event.getIsConnected();
     }
 
-    @Subscribe
-    public void onEventMainThread(WifiMessageEvent event){
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onEvent(WifiMessageEvent event){
         appendStatus(event.getMessage());
     }
+
 
 
     @Subscribe
